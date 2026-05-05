@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeaveTrack — Leave & Travel Management</title>
+<style>
+:root{
+  --green:#1D9E75;--dkgreen:#0F6E56;--ltgreen:#EAF3DE;--txtgreen:#3B6D11;
+  --amber:#FAEEDA;--txtamber:#854F0B;--red:#FCEBEB;--txtred:#A32D2D;
+  --blue:#E6F1FB;--txtblue:#185FA5;--purple:#F3EFFE;--dpurple:#5B21B6;--ltpurple:#EDE9FE;
+  --bg:#F7F8FA;--card:#FFF;--border:#E5E7EB;--text:#111;--muted:#6B7280;
+  --sidebar:#1A2233;--sidebar-active:#2D3B55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;background:var(--bg);color:var(--text)}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0F6E56 0%,#1A2233 100%);display:flex;align-items:center;justify-content:center;z-index:9000}
+.login-box{background:#fff;border-radius:16px;padding:40px 44px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.login-logo{font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.login-field{margin-bottom:16px}
+.login-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px}
+.login-field input,.login-field select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);transition:border-color .15s}
+.login-field input:focus,.login-field select:focus{outline:none;border-color:var(--green)}
+.login-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
+.login-btn:hover{background:var(--dkgreen)}
+.login-error{color:var(--txtred);font-size:12px;margin-top:8px;display:none}
+.login-hint{background:var(--bg);border-radius:8px;padding:12px;margin-top:18px;font-size:11px;color:var(--muted);line-height:1.8}
+.login-hint b{color:var(--text)}
+
+/* ── APP SHELL ── */
+.app{display:flex;flex-direction:column;min-height:100vh;display:none}
+.topbar{background:var(--green);color:#fff;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:500}
+.topbar-brand{font-size:16px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-chip{background:rgba(255,255,255,.15);padding:4px 12px 4px 8px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.25)}
+
+/* ── NOTIFICATION BELL ── */
+.notif-wrap{position:relative}
+.notif-bell{background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative;transition:background .15s}
+.notif-bell:hover{background:rgba(255,255,255,.25)}
+.notif-badge{position:absolute;top:-2px;right:-2px;background:#E24B4A;color:#fff;border-radius:10px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--green)}
+.notif-panel{position:absolute;top:44px;right:-10px;width:340px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:600;display:none;overflow:hidden}
+.notif-panel.open{display:block}
+.notif-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.notif-header-title{font-size:13px;font-weight:600}
+.notif-clear{font-size:11px;color:var(--txtblue);cursor:pointer;background:none;border:none;font-weight:600}
+.notif-list{max-height:360px;overflow-y:auto}
+.notif-item{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:background .1s}
+.notif-item:hover{background:var(--bg)}
+.notif-item.unread{background:#F0FDF9}
+.notif-item.unread:hover{background:#E6FBF4}
+.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.notif-text{font-size:12px;line-height:1.5;flex:1}
+.notif-time{font-size:10px;color:var(--muted);margin-top:2px}
+.notif-empty{padding:32px 16px;text-align:center;font-size:13px;color:var(--muted)}
+.notif-footer{padding:10px 16px;border-top:1px solid var(--border);text-align:center}
+.notif-request-btn{font-size:11px;font-weight:600;color:var(--txtblue);background:none;border:none;cursor:pointer}
+
+/* ── LAYOUT ── */
+.body-wrap{display:flex;flex:1}
+.sidebar{width:215px;background:var(--sidebar);padding:16px 0;flex-shrink:0;min-height:calc(100vh - 52px)}
+.sidebar-section{padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:rgba(255,255,255,.65);cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--green)}
+.nav-icon{font-size:15px;width:18px;text-align:center}
+.content{flex:1;padding:24px;overflow-y:auto;max-width:1100px}
+
+/* ── PAGE ELEMENTS ── */
+.page-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.page-actions{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:14px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.bar{height:5px;background:#E5E7EB;border-radius:3px;margin-top:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.green-val{color:var(--dkgreen)}.amber-val{color:var(--txtamber)}.red-val{color:var(--txtred)}.blue-val{color:var(--txtblue)}.purple-val{color:var(--dpurple)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:600;color:var(--muted)}
+input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
+textarea{resize:vertical;min-height:72px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:4px}
+.travel-section{border:2px solid #C4B5FD;border-radius:10px;padding:16px;background:var(--purple);margin-bottom:14px}
+.travel-title{font-size:13px;font-weight:700;color:var(--dpurple);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.travel-section input,.travel-section select,.travel-section textarea{border-color:#C4B5FD}
+.travel-section input:focus,.travel-section select:focus,.travel-section textarea:focus{border-color:var(--dpurple)}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.checkbox-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--dpurple);cursor:pointer}
+.checkbox-row label{font-size:13px;font-weight:600;color:var(--dpurple);margin:0;cursor:pointer}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-primary:hover{background:var(--dkgreen);border-color:var(--dkgreen)}
+.btn-approve{background:var(--ltgreen);color:var(--txtgreen);border-color:#97C459;font-weight:600}
+.btn-approve:hover{background:#C0DD97}
+.btn-reject{background:var(--red);color:var(--txtred);border-color:#F09595;font-weight:600}
+.btn-reject:hover{background:#F7C1C1}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-purple{background:var(--ltpurple);color:var(--dpurple);border-color:#C4B5FD;font-weight:600}
+.btn-purple:hover{background:#DDD6FE}
+.btn-print{background:#1A2233;color:#fff;border-color:#1A2233}
+.btn-print:hover{background:#2D3B55;border-color:#2D3B55}
+.btn-export{background:var(--blue);color:var(--txtblue);border-color:#85B7EB;font-weight:600}
+.btn-export:hover{background:#B5D4F4}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAFA}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-pending{background:var(--amber);color:var(--txtamber)}
+.badge-approved{background:var(--ltgreen);color:var(--txtgreen)}
+.badge-rejected{background:var(--red);color:var(--txtred)}
+.badge-type{background:var(--blue);color:var(--txtblue)}
+.badge-travel{background:var(--ltpurple);color:var(--dpurple)}
+.badge-awaiting{background:#F3F4F6;color:#6B7280}
+
+/* ── APPROVAL CARD ── */
+.approve-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.approve-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.emp-name{font-size:15px;font-weight:700}
+.emp-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.approve-details{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.detail-block label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:3px}
+.detail-block span{font-size:13px;font-weight:500}
+.approve-reason{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:12px}
+.travel-badge-row{background:var(--purple);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--dpurple);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.approve-actions{display:flex;gap:8px;justify-content:flex-end}
+.divider{height:1px;background:var(--border);margin:12px 0}
+
+/* ── PROGRESS ── */
+.prog-row{margin-bottom:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.prog-track{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .4s}
+
+/* ── CALENDAR ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-head{text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:6px 0;text-transform:uppercase}
+.cal-day{text-align:center;padding:7px 2px;border-radius:6px;font-size:12px}
+.cal-leave{background:var(--ltgreen);color:var(--txtgreen);font-weight:600}
+.cal-sick{background:var(--red);color:var(--txtred);font-weight:600}
+.cal-other{background:var(--amber);color:var(--txtamber);font-weight:600}
+.cal-empty{opacity:0;pointer-events:none}
+
+/* ── MISC ── */
+.note{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px;margin-top:10px;border-left:3px solid var(--green)}
+.note-purple{border-left-color:var(--dpurple)}
+.empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;display:none;animation:fadeUp .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+#toast.success{background:var(--dkgreen)}
+#toast.error{background:var(--txtred)}
+#toast.purple{background:var(--dpurple)}
+#toast.info{background:#1A2233}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PRINT STYLES ── */
+@media print{
+  #login-screen,#toast,.notif-wrap,.logout-btn,.topbar,.sidebar,.page-actions,.approve-actions,.form-actions,.btn-print,.btn-export,.btn-approve,.btn-reject,.btn-purple,.btn-sm,.checkbox-row,.travel-section{display:none!important}
+  body{background:#fff;font-size:12px}
+  .app{display:block!important}
+  .body-wrap{display:block}
+  .content{padding:0;max-width:100%}
+  .card,.approve-card,.stat{border:1px solid #ccc;border-radius:0;page-break-inside:avoid}
+  .stats-row{grid-template-columns:repeat(4,1fr)}
+  table{font-size:11px}
+  .page-title{font-size:16px}
+  .badge{border:1px solid #ccc}
+  #print-header{display:block!important}
+}
+#print-header{display:none;margin-bottom:16px}
+#print-header h2{font-size:18px;font-weight:700}
+#print-header p{font-size:12px;color:#666;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      LeaveTrack
+    </div>
+    <div class="login-sub">Leave & Travel Management System</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter your username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
+    <div class="login-hint">
+      <b>Demo credentials:</b><br>
+      sarah / employee123 &nbsp;(Employee)<br>
+      david / supervisor123 &nbsp;(Supervisor)<br>
+      linda / hr123 &nbsp;(HR Admin)
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══════════════════════════════════════════════════════ -->
+<div class="app" id="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      LeaveTrack
+    </div>
+    <div class="topbar-right">
+      <!-- Notification Bell -->
+      <div class="notif-wrap">
+        <button class="notif-bell" onclick="toggleNotifPanel()" id="notif-bell" title="Notifications">🔔
+          <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+        </button>
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-header">
+            <span class="notif-header-title">Notifications</span>
+            <button class="notif-clear" onclick="clearAllNotifs()">Mark all read</button>
+          </div>
+          <div class="notif-list" id="notif-list"></div>
+          <div class="notif-footer">
+            <button class="notif-request-btn" onclick="requestBrowserNotifs()">🔔 Enable browser notifications</button>
+          </div>
+        </div>
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">S</div>
+        <span id="user-name">Sarah Johnson</span>
+        &nbsp;<span style="opacity:.6;font-size:10px" id="user-role-label">Employee</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content">
+      <div id="print-header">
+        <h2>LeaveTrack — Leave Management Report</h2>
+        <p id="print-date"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const TODAY = new Date().toISOString().split('T')[0];
+const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Other'];
+
+// ── USERS ─────────────────────────────────────────────────────────────────
+const USERS = {
+  sarah:   {password:'employee123',  name:'Sarah Johnson',  role:'employee',   dept:'Engineering', initials:'SJ'},
+  david:   {password:'supervisor123',name:'David Chen',     role:'supervisor', dept:'Engineering', initials:'DC'},
+  linda:   {password:'hr123',        name:'Linda Brown',    role:'hr',         dept:'HR',          initials:'LB'},
+  maria:   {password:'supervisor123',name:'Maria Santos',   role:'supervisor', dept:'Marketing',   initials:'MS'},
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+const state = {
+  user: null,
+  nav: 'dashboard',
+  nextId: 11,
+  notifications: [],
+  requests: [
+    {id:1,employee:'Sarah Johnson',dept:'Engineering',type:'Vacation',from:'2026-05-12',to:'2026-05-16',days:5,reason:'Family vacation',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
+    {id:2,employee:'Marcus Lee',dept:'Marketing',type:'Sick Leave',from:'2026-04-28',to:'2026-04-29',days:2,reason:'Flu symptoms',status:'approved',supBy:'Maria Santos',supDecision:'Approved',supDate:'2026-04-28',hrDecision:'Approved',hrDate:'2026-04-28',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-28'},
+    {id:3,employee:'Priya Nair',dept:'Engineering',type:'Departmental',from:'2026-05-20',to:'2026-05-21',days:2,reason:'Team conference',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-03',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Bridgetown, Barbados',travelPurpose:'Regional Tech Summit 2026',travelCost:'850',travelSupApproval:'Approved',travelHRApproval:'Pending',submitted:'2026-05-02'},
+    {id:4,employee:'James Okafor',dept:'Finance',type:'Vacation',from:'2026-06-02',to:'2026-06-06',days:5,reason:'Annual leave',status:'pending',supBy:'Linda Brown',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-03'},
+    {id:5,employee:'Sarah Johnson',dept:'Engineering',type:'Sick Leave',from:'2026-03-10',to:'2026-03-10',days:1,reason:'Doctor appointment',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-03-10',hrDecision:'Approved',hrDate:'2026-03-10',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-03-10'},
+    {id:6,employee:'Anya Patel',dept:'HR',type:'Bereavement',from:'2026-04-15',to:'2026-04-18',days:4,reason:'Family bereavement',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-04-15',hrDecision:'Approved',hrDate:'2026-04-15',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-15'},
+    {id:7,employee:'Carlos Rivera',dept:'Operations',type:'Vacation',from:'2026-07-01',to:'2026-07-10',days:8,reason:'Summer holidays',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Miami, USA',travelPurpose:'Operations Conference 2026',travelCost:'1200',travelSupApproval:'Pending',travelHRApproval:'Pending',submitted:'2026-05-04'},
+    {id:8,employee:'Diana Osei',dept:'Finance',type:'Maternity',from:'2026-06-01',to:'2026-08-31',days:65,reason:'Maternity leave — first child',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
+    {id:9,employee:'Kevin Thomas',dept:'Engineering',type:'Paternal',from:'2026-06-15',to:'2026-06-26',days:10,reason:'Paternal leave — newborn',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-11',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-10'},
+    {id:10,employee:'Marcia Brown',dept:'Marketing',type:'In Lieu Of',from:'2026-05-25',to:'2026-05-26',days:2,reason:'Worked public holidays (Apr 12-13)',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-05'},
+  ],
+  balances:{
+    'Sarah Johnson':{vacation:15,vacUsed:6,sick:10,sickUsed:1,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Marcus Lee':{vacation:15,vacUsed:2,sick:10,sickUsed:2,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Priya Nair':{vacation:15,vacUsed:2,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:2},
+    'James Okafor':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Diana Osei':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,maternity:90,maternityUsed:65,dept:5,deptUsed:0},
+    'Kevin Thomas':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,paternal:15,paternalUsed:10,dept:5,deptUsed:0},
+  }
+};
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────────────────────
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  const usr=USERS[u];
+  if(!usr||usr.password!==p){
+    document.getElementById('login-error').style.display='block';
+    return;
+  }
+  document.getElementById('login-error').style.display='none';
+  state.user={...usr,username:u};
+  state.nav=MENUS[usr.role][0].id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name').textContent=usr.name;
+  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
+  document.getElementById('user-avatar').textContent=usr.initials;
+  seedNotifications();
+  renderAll();
+}
+
+function doLogout(){
+  state.user=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('notif-panel').classList.remove('open');
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────
+function seedNotifications(){
+  const role=state.user.role;
+  state.notifications=[];
+  if(role==='employee'){
+    addNotif('Your vacation request (May 12–16) was approved by HR ✓','success',true);
+    addNotif('Sick leave (Mar 10) was fully approved ✓','success',true);
+    addNotif('New leave policy update — check HR announcements','info',false);
+  } else if(role==='supervisor'){
+    addNotif('James Okafor submitted a 5-day vacation request','pending',false);
+    addNotif('Marcia Brown submitted an In Lieu Of request','pending',false);
+    addNotif('Carlos Rivera submitted a vacation + travel request','pending',false);
+    addNotif('Kevin Thomas paternal leave needs your approval','pending',false);
+  } else {
+    addNotif('Priya Nair leave approved by supervisor — needs HR review','pending',false);
+    addNotif('Kevin Thomas paternal leave passed supervisor — needs HR','pending',false);
+    addNotif('Travel authorization for Priya Nair needs HR approval','pending',false);
+    addNotif('Monthly leave report is ready to export','info',true);
+  }
+  renderNotifBadge();
+  renderNotifList();
+}
+
+function addNotif(text,type,read){
+  const colors={success:'#1D9E75',pending:'#BA7517',info:'#185FA5',error:'#E24B4A'};
+  const now=new Date();
+  const timeStr=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  state.notifications.unshift({id:Date.now()+Math.random(),text,type,read,color:colors[type]||'#6B7280',time:timeStr});
+}
+
+function renderNotifBadge(){
+  const unread=state.notifications.filter(n=>!n.read).length;
+  const badge=document.getElementById('notif-badge');
+  if(badge){badge.textContent=unread;badge.style.display=unread>0?'flex':'none';}
+}
+
+function renderNotifList(){
+  const el=document.getElementById('notif-list');
+  if(!el)return;
+  if(state.notifications.length===0){el.innerHTML=`<div class="notif-empty">🎉 No notifications</div>`;return;}
+  el.innerHTML=state.notifications.map(n=>`
+    <div class="notif-item${n.read?'':' unread'}" onclick="markRead('${n.id}')">
+      <div class="notif-dot" style="background:${n.color}"></div>
+      <div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
+    </div>`).join('');
+}
+
+function markRead(id){
+  const n=state.notifications.find(x=>String(x.id)===String(id));
+  if(n)n.read=true;
+  renderNotifBadge();renderNotifList();
+}
+
+function clearAllNotifs(){
+  state.notifications.forEach(n=>n.read=true);
+  renderNotifBadge();renderNotifList();
+}
+
+function toggleNotifPanel(){
+  document.getElementById('notif-panel').classList.toggle('open');
+}
+
+function requestBrowserNotifs(){
+  if(!('Notification' in window)){toast('Browser notifications not supported in this browser.','error');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted')toast('Browser notifications enabled! ✓','success');
+    else toast('Notification permission denied.','error');
+  });
+}
+
+function sendBrowserNotif(title,body){
+  if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📅</text></svg>'});
+  }
+}
+
+// close notif panel when clicking outside
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('notif-panel');
+  const bell=document.getElementById('notif-bell');
+  if(panel&&!panel.contains(e.target)&&!bell.contains(e.target))panel.classList.remove('open');
+});
+
+// ── MENUS ─────────────────────────────────────────────────────────────────
+const MENUS={
+  employee:[
+    {id:'dashboard',icon:'▦',label:'Dashboard'},
+    {id:'request',icon:'＋',label:'New Request'},
+    {id:'history',icon:'◷',label:'My Requests'},
+    {id:'travel',icon:'✈',label:'My Travel Auth.'},
+    {id:'calendar',icon:'▤',label:'Calendar'},
+  ],
+  supervisor:[
+    {id:'pending',icon:'◎',label:'Leave Approvals'},
+    {id:'travel_pending',icon:'✈',label:'Travel Approvals'},
+    {id:'team',icon:'⊞',label:'Team Overview'},
+    {id:'all',icon:'◷',label:'All Requests'},
+  ],
+  hr:[
+    {id:'pending',icon:'◎',label:'Leave Approvals'},
+    {id:'travel_pending',icon:'✈',label:'Travel Approvals'},
+    {id:'team',icon:'⊞',label:'All Employees'},
+    {id:'reports',icon:'▤',label:'Reports'},
+    {id:'all',icon:'◷',label:'Full History'},
+  ]
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function badge(status){
+  const cls=status==='Approved'||status==='approved'?'badge-approved':status==='Rejected'||status==='rejected'?'badge-rejected':status==='Pending'||status==='pending'?'badge-pending':'badge-awaiting';
+  return `<span class="badge ${cls}">${status?status.charAt(0).toUpperCase()+status.slice(1):'Awaiting'}</span>`;
+}
+const TYPE_COLORS={'Vacation':'background:#DBEAFE;color:#1E40AF','Sick Leave':'background:#FCE7F3;color:#9D174D','In Lieu Of':'background:#FEF9C3;color:#713F12','Maternity':'background:#FCE7F3;color:#9D174D','Paternal':'background:#DCFCE7;color:#14532D','Bereavement':'background:#F3F4F6;color:#374151','Departmental':'background:#EDE9FE;color:#5B21B6','Other':'background:#F5F5F5;color:#374151'};
+function typeBadge(t){return `<span class="badge" style="${TYPE_COLORS[t]||TYPE_COLORS['Other']}">${t}</span>`;}
+function emptyState(icon,txt,sub=''){return `<div class="empty-state"><div style="font-size:36px;margin-bottom:10px">${icon}</div><div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:4px">${txt}</div>${sub?`<div style="font-size:12px">${sub}</div>`:''}</div>`;}
+function barHtml(used,total,color){const p=total>0?Math.min(100,(used/total)*100).toFixed(0):0;return `<div class="bar"><div class="bar-fill" style="width:${p}%;background:${color}"></div></div>`;}
+
+function setNav(id){state.nav=id;renderAll();}
+
+function renderAll(){
+  if(!state.user)return;
+  const items=MENUS[state.user.role];
+  document.getElementById('sidebar').innerHTML='<div class="sidebar-section">Navigation</div>'+
+    items.map(n=>`<div class="nav-item${state.nav===n.id?' active':''}" onclick="setNav('${n.id}')">
+      <span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('');
+  const c=document.getElementById('content');
+  const first=`<div id="print-header"><h2>LeaveTrack — Leave Management Report</h2><p id="print-date">Printed: ${new Date().toLocaleString()}</p></div>`;
+  const views={
+    employee:{dashboard:renderEmpDash,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar},
+    supervisor:{pending:()=>renderPending('supervisor'),travel_pending:()=>renderTravelPending('supervisor'),team:renderTeam,all:renderAllRequests},
+    hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests}
+  };
+  c.innerHTML=first+((views[state.user.role]||{})[state.nav]||renderEmpDash)();
+}
+
+// ── PRINT / EXPORT ────────────────────────────────────────────────────────
+function printPage(){
+  document.getElementById('print-date').textContent='Printed by: '+state.user.name+' on '+new Date().toLocaleString();
+  window.print();
+}
+
+function exportCSV(){
+  const headers=['ID','Employee','Department','Leave Type','From','To','Days','Reason','Submitted','Supervisor','Sup. Decision','Sup. Date','HR Decision','HR Date','Travel Required','Travel Destination','Travel Purpose','Est. Cost','Status'];
+  const rows=state.requests.map(r=>[
+    'LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,r.from,r.to,r.days,
+    `"${(r.reason||'').replace(/"/g,'""')}"`,r.submitted,r.supBy||'',r.supDecision||'Pending',r.supDate||'',
+    r.hrDecision||'Pending',r.hrDate||'',r.travel?'Yes':'No',
+    `"${(r.travelDest||'').replace(/"/g,'""')}"`,`"${(r.travelPurpose||'').replace(/"/g,'""')}"`,
+    r.travelCost||'',r.status
+  ]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Export_${TODAY}.csv`;
+  a.click();
+  toast('CSV exported successfully ✓','success');
+}
+
+function exportTravelCSV(){
+  const travelReqs=state.requests.filter(r=>r.travel);
+  const headers=['Leave Ref','Employee','Department','Leave Type','Travel Destination','Purpose','Est. Cost','Depart','Return','Sup. Travel Approval','HR Travel Approval'];
+  const rows=travelReqs.map(r=>['LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,`"${r.travelDest}"`,`"${r.travelPurpose}"`,r.travelCost||0,r.from,r.to,r.travelSupApproval||'Pending',r.travelHRApproval||'Pending']);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Travel_${TODAY}.csv`;
+  a.click();
+  toast('Travel CSV exported ✓','purple');
+}
+
+// ── EMPLOYEE VIEWS ────────────────────────────────────────────────────────
+function renderEmpDash(){
+  const b=state.balances[state.user.name]||{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0};
+  const myReqs=state.requests.filter(r=>r.employee===state.user.name);
+  const pending=myReqs.filter(r=>r.status==='pending').length;
+  const travelCount=myReqs.filter(r=>r.travel).length;
+  return `
+  <div class="page-title">Welcome back, ${state.user.name.split(' ')[0]} 👋</div>
+  <div class="page-sub">Your leave & travel summary for 2026.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print Summary</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Vacation Left</div><div class="stat-value green-val">${b.vacation-b.vacUsed}</div><div class="stat-sub">of ${b.vacation} days</div>${barHtml(b.vacUsed,b.vacation,'#1D9E75')}</div>
+    <div class="stat"><div class="stat-label">Sick Days Left</div><div class="stat-value blue-val">${b.sick-b.sickUsed}</div><div class="stat-sub">of ${b.sick} days</div>${barHtml(b.sickUsed,b.sick,'#185FA5')}</div>
+    <div class="stat"><div class="stat-label">In Lieu Remaining</div><div class="stat-value amber-val">${b.inLieu-b.inLieuUsed}</div><div class="stat-sub">of ${b.inLieu} days</div>${barHtml(b.inLieuUsed,b.inLieu,'#BA7517')}</div>
+    <div class="stat"><div class="stat-label">Pending / Travel</div><div class="stat-value purple-val">${pending}</div><div class="stat-sub">${travelCount} travel request${travelCount!==1?'s':''}</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Recent Requests</div>
+    ${myReqs.length===0?emptyState('📋','No requests yet','Click New Request to get started.'):
+    `<div class="table-wrap"><table>
+      <thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Supervisor</th><th>HR</th><th>Status</th></tr></thead>
+      <tbody>${myReqs.map(r=>`<tr>
+        <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
+        <td>${r.travel?`<span class="badge badge-travel">✈ ${r.travelDest.split(',')[0]}</span>`:'—'}</td>
+        <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td><td>${badge(r.status)}</td>
+      </tr>`).join('')}</tbody></table></div>`}
+  </div>
+  <div class="note">📌 All requests need Supervisor approval first, then HR. Travel authorizations are reviewed separately.</div>`;
+}
+
+function renderRequestForm(){
+  return `
+  <div class="page-title">Submit Leave Request</div>
+  <div class="page-sub">Fill in the details below. Your supervisor will be notified immediately.</div>
+  <div class="card" style="max-width:720px">
+    <div class="form-grid">
+      <div class="form-group"><label>Leave Type</label><select id="fType">${LEAVE_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Department</label><select id="fDept"><option>Engineering</option><option>Marketing</option><option>Finance</option><option>HR</option><option>Operations</option></select></div>
+      <div class="form-group"><label>From Date</label><input type="date" id="fFrom" value="${TODAY}" onchange="calcDays()"></div>
+      <div class="form-group"><label>To Date</label><input type="date" id="fTo" value="${TODAY}" onchange="calcDays()"></div>
+      <div class="form-group"><label>Working Days</label><input type="number" id="fDays" value="1" min="1" style="background:#F9FAFB"></div>
+      <div class="form-group"><label>Reporting Supervisor</label><select id="fSup"><option>David Chen</option><option>Maria Santos</option><option>Linda Brown</option></select></div>
+      <div class="form-group full"><label>Reason / Notes</label><textarea id="fReason" placeholder="Briefly describe the reason for your leave..."></textarea></div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="travelToggle" onchange="document.getElementById('travelSection').style.display=this.checked?'block':'none'">
+      <label for="travelToggle">✈ This leave involves travel authorization</label>
+    </div>
+    <div id="travelSection" style="display:none">
+      <div class="travel-section">
+        <div class="travel-title">✈ Travel Authorization Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Destination (City, Country)</label><input type="text" id="fDest" placeholder="e.g. Bridgetown, Barbados"></div>
+          <div class="form-group"><label>Estimated Cost (USD)</label><input type="number" id="fCost" placeholder="e.g. 850" min="0"></div>
+          <div class="form-group full"><label>Purpose of Travel</label><input type="text" id="fPurpose" placeholder="e.g. Regional HR Conference 2026"></div>
+          <div class="form-group full"><label>Additional Notes</label><textarea id="fTravelNotes" placeholder="Accommodation, transport, special requirements..."></textarea></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="setNav('dashboard')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRequest()">✓ Submit Request</button>
+    </div>
+  </div>`;
+}
+
+function calcDays(){
+  const f=document.getElementById('fFrom')?.value,t=document.getElementById('fTo')?.value;
+  if(f&&t){let d=0,cur=new Date(f),end=new Date(t);while(cur<=end){if(cur.getDay()!==0&&cur.getDay()!==6)d++;cur.setDate(cur.getDate()+1);}const el=document.getElementById('fDays');if(el)el.value=Math.max(1,d);}
+}
+
+function submitRequest(){
+  const type=document.getElementById('fType')?.value||'Vacation';
+  const dept=document.getElementById('fDept')?.value||'Engineering';
+  const from=document.getElementById('fFrom')?.value||TODAY;
+  const to=document.getElementById('fTo')?.value||TODAY;
+  const days=parseInt(document.getElementById('fDays')?.value)||1;
+  const sup=document.getElementById('fSup')?.value||'David Chen';
+  const reason=document.getElementById('fReason')?.value||'';
+  const travel=document.getElementById('travelToggle')?.checked||false;
+  const travelDest=document.getElementById('fDest')?.value||'';
+  const travelPurpose=document.getElementById('fPurpose')?.value||'';
+  const travelCost=document.getElementById('fCost')?.value||'';
+  if(travel&&!travelDest){toast('Please enter a travel destination.','error');return;}
+  state.requests.unshift({id:state.nextId++,employee:state.user.name,dept,type,from,to,days,reason,status:'pending',supBy:sup,supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel,travelDest,travelPurpose,travelCost,travelSupApproval:travel?'Pending':'',travelHRApproval:travel?'Pending':'',submitted:TODAY});
+  addNotif(`Your ${type} request (${from}) was submitted and is awaiting supervisor review.`,'info',false);
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Leave Request Submitted','Your request has been sent to '+sup+' for approval.');
+  toast(travel?'Request + Travel Authorization submitted! ✓':'Leave request submitted! ✓','success');
+  setNav('history');
+}
+
+function renderMyHistory(){
+  const reqs=state.requests.filter(r=>r.employee===state.user.name);
+  return `
+  <div class="page-title">My Leave Requests</div>
+  <div class="page-sub">Full history of all your submitted requests.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="card">
+    ${reqs.length===0?emptyState('📋','No requests yet'):
+    `<div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Supervisor ✓</th><th>HR ✓</th><th>Status</th></tr></thead>
+      <tbody>${reqs.map(r=>`<tr>
+        <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
+        <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
+        <td>${r.travel?`<span class="badge badge-travel">✈ ${r.travelDest.split(',')[0]}</span>`:'—'}</td>
+        <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td><td>${badge(r.status)}</td>
+      </tr>`).join('')}</tbody></table></div>`}
+  </div>`;
+}
+
+function renderMyTravel(){
+  const myTravel=state.requests.filter(r=>r.employee===state.user.name&&r.travel);
+  return `
+  <div class="page-title">My Travel Authorizations</div>
+  <div class="page-sub">Track approval status of your travel requests.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportTravelCSV()">⬇ Export CSV</button>
+  </div>
+  ${myTravel.length===0?`<div class="card">${emptyState('✈','No travel requests','Submit a leave with travel to see it here.')}</div>`:
+  myTravel.map(r=>`
+  <div class="approve-card">
+    <div class="approve-card-header">
+      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta">${r.travelPurpose} · LR-${String(r.id).padStart(3,'0')} (${r.type})</div></div>
+      ${r.travelCost?`<div style="font-size:18px;font-weight:700;color:var(--dpurple)">$${parseInt(r.travelCost).toLocaleString()}</div>`:''}
+    </div>
+    <div class="approve-details">
+      <div class="detail-block"><label>Leave Dates</label><span>${r.from} → ${r.to}</span></div>
+      <div class="detail-block"><label>Working Days</label><span>${r.days} days</span></div>
+      <div class="detail-block"><label>Leave Status</label><span>${badge(r.status)}</span></div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Supervisor Travel Approval</div>${badge(r.travelSupApproval||'Pending')}</div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">HR Travel Approval</div>${badge(r.travelHRApproval||'Pending')}</div>
+    </div>
+  </div>`).join('')}
+  <div class="note note-purple">✈ Travel authorization is reviewed separately. Both the leave AND travel must be fully approved.</div>`;
+}
+
+function renderCalendar(){
+  const y=2026,m=4;
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const first=new Date(y,m,1).getDay(),total=new Date(y,m+1,0).getDate();
+  const myReqs=state.requests.filter(r=>r.employee===state.user.name&&r.status==='approved');
+  function getType(d){const ds=`2026-05-${String(d).padStart(2,'0')}`;for(const r of myReqs){if(ds>=r.from&&ds<=r.to)return r.type;}return null;}
+  let cells='';
+  for(let i=0;i<first;i++)cells+=`<div class="cal-day cal-empty"></div>`;
+  for(let d=1;d<=total;d++){const lt=getType(d);const cls=lt==='Sick Leave'?'cal-sick':lt==='Vacation'?'cal-leave':lt?'cal-other':'cal-day';cells+=`<div class="${cls}" title="${lt||''}">${d}</div>`;}
+  return `
+  <div class="page-title">Leave Calendar</div>
+  <div class="page-sub">Approved leave days for May 2026.</div>
+  <div class="page-actions"><button class="btn btn-print" onclick="printPage()">🖨 Print Calendar</button></div>
+  <div class="card" style="max-width:500px">
+    <div class="card-title" style="font-size:15px">${monthNames[m]} ${y}</div>
+    <div class="cal-grid">${dayNames.map(d=>`<div class="cal-head">${d}</div>`).join('')}${cells}</div>
+    <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;font-size:12px">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--ltgreen);border-radius:3px;display:inline-block"></span>Vacation</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--red);border-radius:3px;display:inline-block"></span>Sick Leave</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--amber);border-radius:3px;display:inline-block"></span>Other</span>
+    </div>
+  </div>`;
+}
+
+// ── SUPERVISOR / HR VIEWS ─────────────────────────────────────────────────
+function renderPending(role){
+  const pending=role==='supervisor'
+    ?state.requests.filter(r=>r.supDecision==='Pending')
+    :state.requests.filter(r=>r.supDecision==='Approved'&&r.hrDecision==='Pending');
+  return `
+  <div class="page-title">${role==='supervisor'?'Leave Approvals — Supervisor':'Leave Approvals — HR'}</div>
+  <div class="page-sub">${pending.length} request${pending.length!==1?'s':''} awaiting your decision.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  ${pending.length===0?`<div class="card">${emptyState('✅','All caught up!','No pending approvals right now.')}</div>`:
+  pending.map(r=>`
+  <div class="approve-card">
+    <div class="approve-card-header">
+      <div><div class="emp-name">${r.employee}</div><div class="emp-meta">${r.dept} · Submitted ${r.submitted}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${typeBadge(r.type)}${r.travel?`<span class="badge badge-travel">✈ Travel</span>`:''}</div>
+    </div>
+    <div class="approve-details">
+      <div class="detail-block"><label>From</label><span>${r.from}</span></div>
+      <div class="detail-block"><label>To</label><span>${r.to}</span></div>
+      <div class="detail-block"><label>Working Days</label><span><b>${r.days}</b> days</span></div>
+    </div>
+    ${r.reason?`<div class="approve-reason">📝 ${r.reason}</div>`:''}
+    ${r.travel?`<div class="travel-badge-row">✈ Travel to ${r.travelDest} — ${r.travelPurpose}${r.travelCost?` · Est. $${parseInt(r.travelCost).toLocaleString()}`:''}</div>`:''}
+    ${role==='hr'?`<div style="font-size:12px;color:var(--txtgreen);font-weight:600;margin-bottom:10px">✓ Supervisor (${r.supBy}) approved on ${r.supDate}</div>`:''}
+    <div class="approve-actions">
+      <button class="btn btn-sm btn-reject" onclick="decide(${r.id},'${role}','reject')">✕ Reject</button>
+      <button class="btn btn-sm btn-approve" onclick="decide(${r.id},'${role}','approve')">✓ Approve</button>
+    </div>
+  </div>`).join('')}`;
+}
+
+function renderTravelPending(role){
+  const travelPending=state.requests.filter(r=>r.travel&&(role==='supervisor'?r.travelSupApproval==='Pending':r.travelSupApproval==='Approved'&&r.travelHRApproval==='Pending'));
+  return `
+  <div class="page-title">✈ Travel Approvals — ${role==='supervisor'?'Supervisor':'HR'}</div>
+  <div class="page-sub">Approve or reject travel linked to leave requests. Reviewed separately from leave.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportTravelCSV()">⬇ Export CSV</button>
+  </div>
+  ${travelPending.length===0?`<div class="card">${emptyState('✈','No travel requests pending','All travel authorizations are up to date.')}</div>`:
+  travelPending.map(r=>`
+  <div class="approve-card" style="border:1.5px solid #C4B5FD">
+    <div class="approve-card-header">
+      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta">${r.employee} · ${r.dept} · LR-${String(r.id).padStart(3,'0')} (${r.type})</div></div>
+      ${r.travelCost?`<div style="font-size:18px;font-weight:700;color:var(--dpurple)">$${parseInt(r.travelCost).toLocaleString()}</div>`:''}
+    </div>
+    <div class="approve-details">
+      <div class="detail-block"><label>Leave Dates</label><span>${r.from} → ${r.to}</span></div>
+      <div class="detail-block"><label>Days</label><span>${r.days}</span></div>
+      <div class="detail-block"><label>Leave Status</label><span>${badge(r.supDecision)}</span></div>
+    </div>
+    <div class="approve-reason">✈ <b>Purpose:</b> ${r.travelPurpose||'Not specified'}</div>
+    ${role==='hr'?`<div style="font-size:12px;color:var(--txtgreen);font-weight:600;margin-bottom:10px">✓ Supervisor approved travel</div>`:''}
+    <div class="approve-actions">
+      <button class="btn btn-sm btn-reject" onclick="decideTravel(${r.id},'${role}','reject')">✕ Reject Travel</button>
+      <button class="btn btn-sm btn-purple" onclick="decideTravel(${r.id},'${role}','approve')">✈ Approve Travel</button>
+    </div>
+  </div>`).join('')}`;
+}
+
+function decide(id,role,action){
+  const req=state.requests.find(r=>r.id===id);if(!req)return;
+  const d=action==='approve'?'Approved':'Rejected';
+  if(role==='supervisor'){req.supDecision=d;req.supDate=TODAY;if(d==='Rejected')req.status='rejected';}
+  else{req.hrDecision=d;req.hrDate=TODAY;req.status=d==='Approved'?'approved':'rejected';}
+  const notifText=d==='Approved'
+    ?`${req.employee}'s ${req.type} request was ${role==='supervisor'?'supervisor-approved — now pending HR':'fully approved ✓'}`
+    :`${req.employee}'s ${req.type} request was rejected.`;
+  addNotif(notifText,d==='Approved'?'success':'error',false);
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Leave '+d,req.employee+' — '+req.type+' ('+req.from+')');
+  toast(`${d} for ${req.employee}`,'success');
+  renderAll();
+}
+
+function decideTravel(id,role,action){
+  const req=state.requests.find(r=>r.id===id);if(!req)return;
+  const d=action==='approve'?'Approved':'Rejected';
+  if(role==='supervisor')req.travelSupApproval=d;
+  else req.travelHRApproval=d;
+  addNotif(`Travel to ${req.travelDest} for ${req.employee} was ${d.toLowerCase()} by ${role==='supervisor'?'supervisor':'HR'}.`,d==='Approved'?'success':'error',false);
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Travel '+d,req.employee+' — '+req.travelDest);
+  toast(`Travel ${d.toLowerCase()} for ${req.employee} ✈`,action==='approve'?'purple':'error');
+  renderAll();
+}
+
+function renderTeam(){
+  const empMap={};
+  state.requests.forEach(r=>{
+    if(!empMap[r.employee])empMap[r.employee]={name:r.employee,dept:r.dept,byType:{},pending:0,travel:0};
+    if(r.status==='approved'){empMap[r.employee].byType[r.type]=(empMap[r.employee].byType[r.type]||0)+r.days;}
+    else if(r.status==='pending')empMap[r.employee].pending++;
+    if(r.travel)empMap[r.employee].travel++;
+  });
+  const rows=Object.values(empMap);
+  return `
+  <div class="page-title">Team Leave Overview</div>
+  <div class="page-sub">Approved leave usage across all employees.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Employee</th><th>Dept</th><th>Vacation</th><th>Sick</th><th>In Lieu</th><th>Maternity</th><th>Paternal</th><th>Bereavement</th><th>Other</th><th>Travel</th><th>Pending</th></tr></thead>
+    <tbody>${rows.map(e=>`<tr>
+      <td style="font-weight:600">${e.name}</td><td style="color:var(--muted)">${e.dept}</td>
+      ${['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Other'].map(t=>`<td style="text-align:center">${e.byType[t]?`<b>${e.byType[t]}d</b>`:'—'}</td>`).join('')}
+      <td style="text-align:center">${e.travel>0?`<span class="badge badge-travel">${e.travel}</span>`:'—'}</td>
+      <td style="text-align:center">${e.pending>0?`<span class="badge badge-pending">${e.pending}</span>`:'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div></div>`;
+}
+
+function renderAllRequests(){
+  return `
+  <div class="page-title">All Leave Requests</div>
+  <div class="page-sub">Complete record of all employee requests.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print All</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>ID</th><th>Employee</th><th>Dept</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Sup ✓</th><th>HR ✓</th><th>Status</th></tr></thead>
+    <tbody>${state.requests.map(r=>`<tr>
+      <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
+      <td style="font-weight:600">${r.employee}</td><td style="color:var(--muted)">${r.dept}</td>
+      <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
+      <td>${r.travel?`<span class="badge badge-travel">✈</span>`:'—'}</td>
+      <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td><td>${badge(r.status)}</td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function renderReports(){
+  const typeData={};LEAVE_TYPES.forEach(t=>typeData[t]={days:0,count:0});
+  const deptData={};let totalDays=0,travelCount=0,pendingCount=0,travelCostTotal=0;
+  state.requests.forEach(r=>{
+    if(r.status==='pending')pendingCount++;
+    if(r.travel){travelCount++;travelCostTotal+=parseInt(r.travelCost||0);}
+    if(r.status==='approved'){
+      const k=typeData[r.type]?r.type:'Other';
+      if(typeData[k]){typeData[k].days+=r.days;typeData[k].count++;}
+      deptData[r.dept]=(deptData[r.dept]||0)+r.days;totalDays+=r.days;
+    }
+  });
+  const typeColors={'Vacation':'#1D9E75','Sick Leave':'#E24B4A','In Lieu Of':'#BA7517','Maternity':'#EC4899','Paternal':'#10B981','Bereavement':'#6B7280','Departmental':'#5B21B6','Other':'#94A3B8'};
+  return `
+  <div class="page-title">Leave & Travel Reports</div>
+  <div class="page-sub">Aggregated statistics for 2026.</div>
+  <div class="page-actions">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print Report</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export Leaves CSV</button>
+    <button class="btn btn-export" onclick="exportTravelCSV()">✈ Export Travel CSV</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Total Days Approved</div><div class="stat-value">${totalDays}</div></div>
+    <div class="stat"><div class="stat-label">Vacation Days</div><div class="stat-value green-val">${typeData['Vacation'].days}</div></div>
+    <div class="stat"><div class="stat-label">Mat. / Paternal</div><div class="stat-value" style="color:#EC4899">${(typeData['Maternity'].days||0)+(typeData['Paternal'].days||0)}</div></div>
+    <div class="stat"><div class="stat-label">Travel Est. Cost</div><div class="stat-value purple-val">$${travelCostTotal.toLocaleString()}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-title">Days by Leave Type</div>
+      ${LEAVE_TYPES.map(t=>`<div class="prog-row">
+        <div class="prog-label"><span>${t}</span><span style="font-weight:700">${typeData[t]?.days||0}d</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,((typeData[t]?.days||0)/totalDays*100)).toFixed(0):0}%;background:${typeColors[t]||'#888'}"></div></div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Days by Department</div>
+      ${Object.entries(deptData).map(([d,v])=>`<div class="prog-row">
+        <div class="prog-label"><span>${d}</span><span style="font-weight:700">${v}d</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,(v/totalDays*100)).toFixed(0):0}%;background:var(--green)"></div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3200);
+}
+</script>
+</body>
+</html>

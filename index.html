@@ -243,8 +243,8 @@ tr:hover td{background:#FAFAFA}
     </div>
     <div class="login-sub">Leave & Travel Management System</div>
     <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="login-user" placeholder="Enter your username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <label>Email</label>
+      <input type="email" id="login-user" placeholder="Enter your email" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="login-field">
       <label>Password</label>
@@ -253,10 +253,7 @@ tr:hover td{background:#FAFAFA}
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
     <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
     <div class="login-hint">
-      <b>Demo credentials:</b><br>
-      sarah / employee123 &nbsp;(Employee)<br>
-      david / supervisor123 &nbsp;(Supervisor)<br>
-      linda / hr123 &nbsp;(HR Admin)
+      Contact your HR Administrator to receive your login credentials.
     </div>
   </div>
 </div>
@@ -309,6 +306,7 @@ tr:hover td{background:#FAFAFA}
 
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const TODAY = new Date().toISOString().split('T')[0];
 const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Other'];
@@ -329,14 +327,12 @@ const DEPARTMENTS = [
   'Bible Instructor',
 ];
 
-// ── USERS ─────────────────────────────────────────────────────────────────
-const USERS = {
-  sarah:   {password:'employee123',  name:'Sarah Johnson',  role:'employee',   dept:'Information Technology',    initials:'SJ'},
-  david:   {password:'supervisor123',name:'David Chen',     role:'supervisor', dept:'Information Technology',    initials:'DC'},
-  linda:   {password:'hr123',        name:'Linda Brown',    role:'hr',         dept:'Human Resource Management', initials:'LB'},
-  maria:   {password:'supervisor123',name:'Maria Santos',   role:'supervisor', dept:'Administrative Assistant',  initials:'MS'},
-  john:    {password:'employee123',  name:'John Doe',       role:'employee',   dept:'Bible Instructor',          initials:'JD'},
-};
+// ── SUPABASE ───────────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(
+  'https://jfwihbkocrrercffsjyb.supabase.co',
+  'sb_publishable_XEYc2s1GfAlC2dFwpGqoLA_gaBwloVb'
+);
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 const state = {
@@ -378,27 +374,23 @@ const state = {
 };
 
 // ── LOGIN / LOGOUT ────────────────────────────────────────────────────────
-function doLogin(){
-  const u=document.getElementById('login-user').value.trim().toLowerCase();
-  const p=document.getElementById('login-pass').value;
-  const usr=USERS[u];
-  const workerRecord=state.workers.find(w=>w.username===u);
+async function doLogin(){
+  const email=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-error');
-  if(!usr||usr.password!==p){errEl.textContent='Incorrect username or password. Please try again.';errEl.style.display='block';return;}
-  if(workerRecord&&workerRecord.active===false){errEl.textContent='This account has been deactivated. Please contact HR.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  state.user={...usr,username:u};
-  state.nav=MENUS[usr.role][0].id;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('user-name').textContent=usr.name;
-  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
-  document.getElementById('user-avatar').textContent=usr.initials;
-  seedNotifications();
-  renderAll();
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  const {data:worker,error:wErr}=await sb.from('workers').select('*').eq('user_id',data.user.id).single();
+  if(wErr||!worker){errEl.textContent='Account not found. Please contact HR.';errEl.style.display='block';await sb.auth.signOut();return;}
+  if(worker.active===false){errEl.textContent='This account has been deactivated. Please contact HR.';errEl.style.display='block';await sb.auth.signOut();return;}
+  state.user={...worker};
+  await loadData();
+  showApp();
 }
 
-function doLogout(){
+async function doLogout(){
+  await sb.auth.signOut();
   state.user=null;
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
@@ -406,6 +398,39 @@ function doLogout(){
   document.getElementById('login-pass').value='';
   document.getElementById('notif-panel').classList.remove('open');
 }
+
+async function loadData(){
+  const [{data:requests},{data:balances},{data:workers}]=await Promise.all([
+    sb.from('requests').select('*').order('submitted',{ascending:false}),
+    sb.from('balances').select('*'),
+    sb.from('workers').select('*'),
+  ]);
+  state.requests=requests||[];
+  state.workers=workers||[];
+  state.balances={};
+  (balances||[]).forEach(b=>state.balances[b.worker_name]=b);
+}
+
+function showApp(){
+  const u=state.user;
+  const initials=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  state.nav=MENUS[u.role][0].id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name').textContent=u.name;
+  document.getElementById('user-role-label').textContent=u.role==='hr'?'HR Admin':u.role.charAt(0).toUpperCase()+u.role.slice(1);
+  document.getElementById('user-avatar').textContent=initials;
+  seedNotifications();
+  renderAll();
+}
+
+// Restore session automatically on page load
+sb.auth.getSession().then(async({data:{session}})=>{
+  if(session){
+    const {data:worker}=await sb.from('workers').select('*').eq('user_id',session.user.id).single();
+    if(worker&&worker.active!==false){state.user={...worker};await loadData();showApp();}
+  }
+});
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
 function seedNotifications(){
@@ -1116,7 +1141,7 @@ function onboardWorker(){
   if(!email||!email.includes('@')) errs.push('Valid email is required.');
   if(!username||username.length<3) errs.push('Username must be at least 3 characters.');
   if(!password||password.length<6) errs.push('Password must be at least 6 characters.');
-  if(USERS[username]) errs.push('Username "'+username+'" already exists. Choose another.');
+  if(state.workers.find(w=>w.username===username)) errs.push('Username "'+username+'" already exists. Choose another.');
   if(errs.length){errEl.textContent=errs.join(' ');errEl.style.display='block';return;}
   errEl.style.display='none';
 
@@ -1133,9 +1158,6 @@ function onboardWorker(){
     departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
     other:parseInt(document.getElementById('ob-other')?.value)||0,
   };
-
-  // Add to USERS for login
-  USERS[username]={password,name,role,dept,initials};
 
   // Add to workers directory
   state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,endDate:employeeEndDate,active:employeeEndDate?false:true,entitlements});
@@ -1245,10 +1267,7 @@ function saveWorkerEdit(username){
     departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
     other:parseInt(document.getElementById('ob-other')?.value)||0,
   };
-  // Update USERS
   const initials=(first[0]+(last[0]||'')).toUpperCase();
-  USERS[username]={...USERS[username],name:newName,role:w.role,dept:w.dept,initials};
-  if(newPass&&newPass.length>=6) USERS[username].password=newPass;
   addNotif(`${newName}'s profile has been updated by HR.`,'info',false);
   renderNotifBadge();renderNotifList();
   toast(`${newName}'s profile updated ✓`,'success');
@@ -1260,7 +1279,6 @@ function deactivateWorker(username){
   if(!w)return;
   if(!confirm(`Deactivate ${w.name}? They will no longer be able to log in.`))return;
   w.active=false;
-  if(USERS[username])USERS[username].active=false;
   addNotif(`${w.name} has been deactivated by HR.`,'error',false);
   renderNotifBadge();renderNotifList();
   toast(`${w.name} deactivated`,'info');
@@ -1271,7 +1289,6 @@ function reactivateWorker(username){
   const w=state.workers.find(x=>x.username===username);
   if(!w)return;
   w.active=true;
-  if(USERS[username])USERS[username].active=true;
   addNotif(`${w.name} has been reactivated by HR.`,'success',false);
   renderNotifBadge();renderNotifList();
   toast(`${w.name} reactivated ✓`,'success');

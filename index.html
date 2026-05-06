@@ -405,10 +405,26 @@ async function loadData(){
     sb.from('balances').select('*'),
     sb.from('workers').select('*'),
   ]);
-  state.requests=requests||[];
-  state.workers=workers||[];
+  state.requests=(requests||[]).map(r=>({...r,
+    from:r.from_date, to:r.to_date,
+    supBy:r.sup_by||'', supDecision:r.sup_decision||'Pending', supDate:r.sup_date||'',
+    hrDecision:r.hr_decision||'Pending', hrDate:r.hr_date||'',
+    travelDest:r.travel_dest||'', travelPurpose:r.travel_purpose||'',
+    travelCost:r.travel_cost||'', travelSupApproval:r.travel_sup_approval||'',
+    travelHRApproval:r.travel_hr_approval||'',
+  }));
+  state.workers=(workers||[]).map(w=>({...w,
+    jobTitle:w.job_title||'', startDate:w.start_date||'', endDate:w.end_date||'',
+  }));
   state.balances={};
-  (balances||[]).forEach(b=>state.balances[b.worker_name]=b);
+  (balances||[]).forEach(b=>state.balances[b.worker_name]={
+    vacation:b.vacation,    vacUsed:b.vac_used,
+    sick:b.sick,            sickUsed:b.sick_used,
+    inLieu:b.in_lieu,       inLieuUsed:b.in_lieu_used,
+    dept:b.dept_days,       deptUsed:b.dept_used,
+    maternity:b.maternity,  maternityUsed:b.maternity_used,
+    paternal:b.paternal,    paternalUsed:b.paternal_used,
+  });
 }
 
 function showApp(){

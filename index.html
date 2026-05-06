@@ -120,6 +120,38 @@ textarea{resize:vertical;min-height:72px}
 .btn-print:hover{background:#2D3B55;border-color:#2D3B55}
 .btn-export{background:var(--blue);color:var(--txtblue);border-color:#85B7EB;font-weight:600}
 .btn-export:hover{background:#B5D4F4}
+.btn-danger{background:var(--red);color:var(--txtred);border-color:#F09595;font-weight:600}
+.btn-danger:hover{background:#F7C1C1}
+.btn-warning{background:var(--amber);color:var(--txtamber);border-color:#FAC775;font-weight:600}
+.btn-warning:hover{background:#FAD898}
+
+/* ── ONBOARDING ── */
+.onboard-section{border:1.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;background:var(--bg)}
+.onboard-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.leave-entitle-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:4px}
+.leave-entitle-item{display:flex;flex-direction:column;gap:4px}
+.leave-entitle-item label{font-size:11px;font-weight:600;color:var(--muted)}
+.leave-entitle-item input{padding:7px 10px;font-size:13px;text-align:center}
+.credential-box{background:#0F1117;border-radius:10px;padding:16px 20px;margin-top:14px}
+.credential-box-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4ADE80;margin-bottom:10px}
+.credential-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.credential-label{font-size:12px;color:#9CA3AF}
+.credential-val{font-family:monospace;font-size:13px;color:#F9FAFB;font-weight:600;background:#1F2937;padding:3px 10px;border-radius:6px;letter-spacing:.04em}
+.credential-note{font-size:11px;color:#6B7280;margin-top:8px;border-top:1px solid #1F2937;padding-top:8px}
+.worker-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.worker-avatar{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.worker-avatar.inactive{background:var(--muted)}
+.worker-info{flex:1}
+.worker-name{font-size:14px;font-weight:700}
+.worker-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.worker-actions{display:flex;gap:6px;flex-shrink:0}
+.worker-entitlements{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.entitle-pill{background:var(--bg);border:0.5px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--muted)}
+.status-active{background:var(--ltgreen);color:var(--txtgreen)}
+.status-inactive{background:#F3F4F6;color:#9CA3AF}
+.success-banner{background:var(--ltgreen);border:1.5px solid #97C459;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+.success-icon{font-size:22px;flex-shrink:0}
+.success-text{font-size:13px;color:var(--txtgreen);font-weight:500;line-height:1.6}
 
 /* ── TABLE ── */
 .table-wrap{overflow-x:auto}
@@ -292,6 +324,17 @@ const state = {
   nav: 'dashboard',
   nextId: 11,
   notifications: [],
+  workers: [
+    {username:'sarah',  name:'Sarah Johnson',  dept:'Engineering', role:'employee',   supervisor:'David Chen',  email:'sarah.johnson@company.com',  jobTitle:'Software Engineer',     startDate:'2024-01-15',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'david',  name:'David Chen',     dept:'Engineering', role:'supervisor', supervisor:'',            email:'david.chen@company.com',     jobTitle:'Engineering Lead',       startDate:'2022-03-01',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'linda',  name:'Linda Brown',    dept:'HR',          role:'hr',         supervisor:'',            email:'linda.brown@company.com',     jobTitle:'HR Manager',             startDate:'2021-06-01',active:true, entitlements:{vacation:20,sick:10,inLieu:5,maternity:0,paternal:15,bereavement:5,departmental:5,other:5}},
+    {username:'maria',  name:'Maria Santos',   dept:'Marketing',   role:'supervisor', supervisor:'',            email:'maria.santos@company.com',    jobTitle:'Marketing Lead',         startDate:'2023-02-14',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'marcus', name:'Marcus Lee',     dept:'Marketing',   role:'employee',   supervisor:'Maria Santos',email:'marcus.lee@company.com',      jobTitle:'Marketing Coordinator',  startDate:'2024-07-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'priya',  name:'Priya Nair',     dept:'Engineering', role:'employee',   supervisor:'David Chen',  email:'priya.nair@company.com',      jobTitle:'Frontend Developer',     startDate:'2023-11-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'james',  name:'James Okafor',   dept:'Finance',     role:'employee',   supervisor:'Linda Brown', email:'james.okafor@company.com',    jobTitle:'Financial Analyst',      startDate:'2025-01-10',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'diana',  name:'Diana Osei',     dept:'Finance',     role:'employee',   supervisor:'Linda Brown', email:'diana.osei@company.com',      jobTitle:'Accounts Payable',       startDate:'2023-05-20',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'carlos', name:'Carlos Rivera',  dept:'Operations',  role:'employee',   supervisor:'Maria Santos',email:'carlos.rivera@company.com',   jobTitle:'Operations Coordinator', startDate:'2024-09-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+  ],
   requests: [
     {id:1,employee:'Sarah Johnson',dept:'Engineering',type:'Vacation',from:'2026-05-12',to:'2026-05-16',days:5,reason:'Family vacation',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
     {id:2,employee:'Marcus Lee',dept:'Marketing',type:'Sick Leave',from:'2026-04-28',to:'2026-04-29',days:2,reason:'Flu symptoms',status:'approved',supBy:'Maria Santos',supDecision:'Approved',supDate:'2026-04-28',hrDecision:'Approved',hrDate:'2026-04-28',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-28'},
@@ -319,11 +362,11 @@ function doLogin(){
   const u=document.getElementById('login-user').value.trim().toLowerCase();
   const p=document.getElementById('login-pass').value;
   const usr=USERS[u];
-  if(!usr||usr.password!==p){
-    document.getElementById('login-error').style.display='block';
-    return;
-  }
-  document.getElementById('login-error').style.display='none';
+  const workerRecord=state.workers.find(w=>w.username===u);
+  const errEl=document.getElementById('login-error');
+  if(!usr||usr.password!==p){errEl.textContent='Incorrect username or password. Please try again.';errEl.style.display='block';return;}
+  if(workerRecord&&workerRecord.active===false){errEl.textContent='This account has been deactivated. Please contact HR.';errEl.style.display='block';return;}
+  errEl.style.display='none';
   state.user={...usr,username:u};
   state.nav=MENUS[usr.role][0].id;
   document.getElementById('login-screen').style.display='none';
@@ -448,6 +491,8 @@ const MENUS={
     {id:'team',icon:'⊞',label:'All Employees'},
     {id:'reports',icon:'▤',label:'Reports'},
     {id:'all',icon:'◷',label:'Full History'},
+    {id:'workers',icon:'👥',label:'Workers'},
+    {id:'onboard',icon:'＋',label:'Onboard Worker'},
   ]
 };
 
@@ -474,7 +519,7 @@ function renderAll(){
   const views={
     employee:{dashboard:renderEmpDash,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar},
     supervisor:{pending:()=>renderPending('supervisor'),travel_pending:()=>renderTravelPending('supervisor'),team:renderTeam,all:renderAllRequests},
-    hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests}
+    hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests,workers:renderWorkers,onboard:renderOnboard}
   };
   c.innerHTML=first+((views[state.user.role]||{})[state.nav]||renderEmpDash)();
 }
@@ -869,7 +914,326 @@ function renderReports(){
   </div>`;
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────────────
+// ── WORKER MANAGEMENT ────────────────────────────────────────────────────
+function renderWorkers(){
+  const active=state.workers.filter(w=>w.active);
+  const inactive=state.workers.filter(w=>!w.active);
+  const supervisors=state.workers.filter(w=>w.role==='supervisor'||w.role==='hr');
+  return `
+  <div class="page-title">Workers Directory</div>
+  <div class="page-sub">${active.length} active · ${inactive.length} inactive · ${state.workers.length} total</div>
+  <div class="page-actions">
+    <button class="btn btn-primary" onclick="setNav('onboard')">＋ Onboard New Worker</button>
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportWorkersCSV()">⬇ Export CSV</button>
+  </div>
+  ${active.map(w=>workerCard(w,supervisors)).join('')}
+  ${inactive.length>0?`<div style="font-size:12px;font-weight:600;color:var(--muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em">Inactive / Offboarded</div>${inactive.map(w=>workerCard(w,supervisors)).join('')}`:''}`;
+}
+
+function workerCard(w,supervisors){
+  const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const roleLabel=w.role==='hr'?'HR Admin':w.role==='supervisor'?'Supervisor':'Employee';
+  const e=w.entitlements||{};
+  return `
+  <div class="worker-card" style="${!w.active?'opacity:.6':''}">
+    <div class="worker-avatar${w.active?'':' inactive'}">${initials}</div>
+    <div class="worker-info">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="worker-name">${w.name}</span>
+        <span class="badge ${w.active?'status-active':'status-inactive'}">${w.active?'Active':'Inactive'}</span>
+        <span class="badge badge-type">${roleLabel}</span>
+      </div>
+      <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
+      <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email} · Since ${w.startDate}</div>
+      <div class="worker-entitlements">
+        ${[['Vacation',e.vacation],['Sick',e.sick],['In Lieu',e.inLieu],['Maternity',e.maternity],['Paternal',e.paternal],['Bereavement',e.bereavement],['Dept.',e.departmental],['Other',e.other]].filter(([,v])=>v>0).map(([k,v])=>`<span class="entitle-pill">${k}: ${v}d</span>`).join('')}
+      </div>
+    </div>
+    <div class="worker-actions">
+      <button class="btn btn-sm btn-warning" onclick="editWorker('${w.username}')">✏ Edit</button>
+      ${w.active
+        ?`<button class="btn btn-sm btn-danger" onclick="deactivateWorker('${w.username}')">Deactivate</button>`
+        :`<button class="btn btn-sm btn-approve" onclick="reactivateWorker('${w.username}')">Reactivate</button>`}
+    </div>
+  </div>`;
+}
+
+function renderOnboard(prefill){
+  const p=prefill||{};
+  const supervisors=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr')&&w.active);
+  const isEdit=!!p.username;
+  return `
+  <div class="page-title">${isEdit?'Edit Worker — '+p.name:'Onboard New Worker'}</div>
+  <div class="page-sub">${isEdit?'Update employee profile, supervisor assignment and leave entitlements.':'Create a new employee account with login credentials and leave entitlements.'}</div>
+
+  <div class="card" style="max-width:780px">
+    <!-- Personal Info -->
+    <div class="onboard-section">
+      <div class="onboard-section-title">👤 Personal Information</div>
+      <div class="form-grid">
+        <div class="form-group"><label>First Name</label><input type="text" id="ob-first" placeholder="e.g. John" value="${p.name?p.name.split(' ')[0]:''}"></div>
+        <div class="form-group"><label>Last Name</label><input type="text" id="ob-last" placeholder="e.g. Smith" value="${p.name?p.name.split(' ').slice(1).join(' '):''}"></div>
+        <div class="form-group"><label>Job Title</label><input type="text" id="ob-title" placeholder="e.g. Software Engineer" value="${p.jobTitle||''}"></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="ob-email" placeholder="e.g. john.smith@company.com" value="${p.email||''}"></div>
+        <div class="form-group"><label>Department</label>
+          <select id="ob-dept">
+            ${['Engineering','Marketing','Finance','HR','Operations','Sales','Legal','Administration'].map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Start Date</label><input type="date" id="ob-start" value="${p.startDate||TODAY}"></div>
+      </div>
+    </div>
+
+    <!-- Role & Supervisor -->
+    <div class="onboard-section">
+      <div class="onboard-section-title">🏷 Role & Reporting</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Role / Access Level</label>
+          <select id="ob-role">
+            <option value="employee"${(p.role||'employee')==='employee'?' selected':''}>Employee</option>
+            <option value="supervisor"${p.role==='supervisor'?' selected':''}>Supervisor</option>
+            <option value="hr"${p.role==='hr'?' selected':''}>HR Admin</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Reporting Supervisor</label>
+          <select id="ob-sup">
+            <option value="">— None (for supervisors/HR) —</option>
+            ${supervisors.map(s=>`<option value="${s.name}"${p.supervisor===s.name?' selected':''}>${s.name} (${s.dept})</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leave Entitlements -->
+    <div class="onboard-section">
+      <div class="onboard-section-title">📅 Annual Leave Entitlements (days per year)</div>
+      <div class="leave-entitle-grid">
+        <div class="leave-entitle-item"><label>Vacation</label><input type="number" id="ob-vacation" value="${p.entitlements?.vacation??15}" min="0" max="365"></div>
+        <div class="leave-entitle-item"><label>Sick Leave</label><input type="number" id="ob-sick" value="${p.entitlements?.sick??10}" min="0" max="365"></div>
+        <div class="leave-entitle-item"><label>In Lieu Of</label><input type="number" id="ob-inlieu" value="${p.entitlements?.inLieu??3}" min="0" max="365"></div>
+        <div class="leave-entitle-item"><label>Bereavement</label><input type="number" id="ob-bereavement" value="${p.entitlements?.bereavement??5}" min="0" max="60"></div>
+        <div class="leave-entitle-item"><label>Maternity</label><input type="number" id="ob-maternity" value="${p.entitlements?.maternity??90}" min="0" max="365"></div>
+        <div class="leave-entitle-item"><label>Paternal</label><input type="number" id="ob-paternal" value="${p.entitlements?.paternal??15}" min="0" max="90"></div>
+        <div class="leave-entitle-item"><label>Departmental</label><input type="number" id="ob-dept-leave" value="${p.entitlements?.departmental??5}" min="0" max="60"></div>
+        <div class="leave-entitle-item"><label>Other</label><input type="number" id="ob-other" value="${p.entitlements?.other??3}" min="0" max="60"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Set to 0 for leave types that don't apply to this employee.</div>
+    </div>
+
+    <!-- Login Credentials -->
+    <div class="onboard-section">
+      <div class="onboard-section-title">🔐 Login Credentials</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="ob-user" placeholder="e.g. jsmith (lowercase, no spaces)" value="${p.username||''}"${isEdit?' style="background:#F9FAFB" readonly':''} oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._]/g,'')">
+          ${isEdit?'<span style="font-size:11px;color:var(--muted)">Username cannot be changed after creation.</span>':''}
+        </div>
+        <div class="form-group">
+          <label>${isEdit?'New Password (leave blank to keep current)':'Password'}</label>
+          <input type="text" id="ob-pass" placeholder="${isEdit?'Enter new password to change...':'e.g. Welcome@2026'}" value="">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">Share these credentials privately with the employee. They can change their password after logging in.</div>
+    </div>
+
+    <div id="ob-error" style="color:var(--txtred);font-size:12px;font-weight:600;margin-bottom:10px;display:none"></div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="setNav('workers')">Cancel</button>
+      <button class="btn btn-primary" onclick="${isEdit?`saveWorkerEdit('${p.username}')`:'onboardWorker()'}">${isEdit?'💾 Save Changes':'✓ Create Account & Onboard'}</button>
+    </div>
+  </div>`;
+}
+
+function onboardWorker(){
+  const first=document.getElementById('ob-first')?.value.trim();
+  const last=document.getElementById('ob-last')?.value.trim();
+  const title=document.getElementById('ob-title')?.value.trim();
+  const email=document.getElementById('ob-email')?.value.trim();
+  const dept=document.getElementById('ob-dept')?.value;
+  const start=document.getElementById('ob-start')?.value;
+  const role=document.getElementById('ob-role')?.value;
+  const sup=document.getElementById('ob-sup')?.value;
+  const username=document.getElementById('ob-user')?.value.trim();
+  const password=document.getElementById('ob-pass')?.value;
+  const errEl=document.getElementById('ob-error');
+
+  const errs=[];
+  if(!first||!last) errs.push('Full name is required.');
+  if(!email||!email.includes('@')) errs.push('Valid email is required.');
+  if(!username||username.length<3) errs.push('Username must be at least 3 characters.');
+  if(!password||password.length<6) errs.push('Password must be at least 6 characters.');
+  if(USERS[username]) errs.push('Username "'+username+'" already exists. Choose another.');
+  if(errs.length){errEl.textContent=errs.join(' ');errEl.style.display='block';return;}
+  errEl.style.display='none';
+
+  const name=first+' '+last;
+  const initials=(first[0]+(last[0]||'')).toUpperCase();
+  const entitlements={
+    vacation:parseInt(document.getElementById('ob-vacation')?.value)||0,
+    sick:parseInt(document.getElementById('ob-sick')?.value)||0,
+    inLieu:parseInt(document.getElementById('ob-inlieu')?.value)||0,
+    bereavement:parseInt(document.getElementById('ob-bereavement')?.value)||0,
+    maternity:parseInt(document.getElementById('ob-maternity')?.value)||0,
+    paternal:parseInt(document.getElementById('ob-paternal')?.value)||0,
+    departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
+    other:parseInt(document.getElementById('ob-other')?.value)||0,
+  };
+
+  // Add to USERS for login
+  USERS[username]={password,name,role,dept,initials};
+
+  // Add to workers directory
+  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,active:true,entitlements});
+
+  // Seed empty balance
+  state.balances[name]={
+    vacation:entitlements.vacation,vacUsed:0,
+    sick:entitlements.sick,sickUsed:0,
+    inLieu:entitlements.inLieu,inLieuUsed:0,
+    dept:entitlements.departmental,deptUsed:0,
+  };
+
+  // Notification
+  addNotif(`${name} has been onboarded as ${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'an Employee'} in ${dept}.`,'success',false);
+  renderNotifBadge();renderNotifList();
+
+  // Show credential confirmation page
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div id="print-header"><h2>LeaveTrack — New Worker Credentials</h2><p>Generated: ${new Date().toLocaleString()}</p></div>
+  <div class="page-title">Worker Onboarded Successfully ✓</div>
+  <div class="page-sub">Account created for ${name}. Share the credentials below privately.</div>
+  <div class="success-banner">
+    <div class="success-icon">🎉</div>
+    <div class="success-text"><b>${name}</b> has been added as a <b>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</b> in the <b>${dept}</b> department.<br>Username <b>@${username}</b> is now active and can log in immediately.</div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Employee Profile</div>
+    <div class="form-grid" style="font-size:13px;margin-bottom:0">
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">FULL NAME</span>${name}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">JOB TITLE</span>${title||'—'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">DEPARTMENT</span>${dept}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">ROLE</span>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">SUPERVISOR</span>${sup||'—'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">START DATE</span>${start}</div>
+    </div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Leave Entitlements</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${Object.entries({Vacation:entitlements.vacation,'Sick Leave':entitlements.sick,'In Lieu Of':entitlements.inLieu,Bereavement:entitlements.bereavement,Maternity:entitlements.maternity,Paternal:entitlements.paternal,Departmental:entitlements.departmental,Other:entitlements.other}).map(([k,v])=>`
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;text-transform:uppercase">${k}</div>
+          <div style="font-size:20px;font-weight:700;${v===0?'color:var(--muted)':'color:var(--dkgreen)'}">${v}</div>
+          <div style="font-size:10px;color:var(--muted)">days</div>
+        </div>`).join('')}
+    </div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Login Credentials — Share Privately</div>
+    <div class="credential-box">
+      <div class="credential-box-title">🔐 Access Details</div>
+      <div class="credential-row"><span class="credential-label">Username</span><span class="credential-val">${username}</span></div>
+      <div class="credential-row"><span class="credential-label">Password</span><span class="credential-val">${password}</span></div>
+      <div class="credential-row"><span class="credential-label">Login URL</span><span class="credential-val">Open index.html</span></div>
+      <div class="credential-note">⚠ Share these credentials directly with the employee. Advise them to keep their password secure. You can update their password at any time from the Workers directory.</div>
+    </div>
+  </div>
+  <div class="page-actions" style="margin-top:4px">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print Credentials</button>
+    <button class="btn btn-primary" onclick="setNav('workers')">Go to Workers Directory</button>
+    <button class="btn" onclick="setNav('onboard')">Onboard Another</button>
+  </div>`;
+}
+
+function editWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  const c=document.getElementById('content');
+  const ph=`<div id="print-header"><h2>LeaveTrack — Edit Worker</h2><p>Generated: ${new Date().toLocaleString()}</p></div>`;
+  state.nav='onboard';
+  renderAll();
+  // re-render with prefill
+  document.getElementById('content').innerHTML=ph+renderOnboard(w);
+}
+
+function saveWorkerEdit(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  const first=document.getElementById('ob-first')?.value.trim();
+  const last=document.getElementById('ob-last')?.value.trim();
+  const errEl=document.getElementById('ob-error');
+  if(!first||!last){errEl.textContent='Full name is required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+
+  const newName=first+' '+last;
+  const newPass=document.getElementById('ob-pass')?.value;
+  w.name=newName;
+  w.jobTitle=document.getElementById('ob-title')?.value.trim()||w.jobTitle;
+  w.email=document.getElementById('ob-email')?.value.trim()||w.email;
+  w.dept=document.getElementById('ob-dept')?.value||w.dept;
+  w.startDate=document.getElementById('ob-start')?.value||w.startDate;
+  w.role=document.getElementById('ob-role')?.value||w.role;
+  w.supervisor=document.getElementById('ob-sup')?.value||'';
+  w.entitlements={
+    vacation:parseInt(document.getElementById('ob-vacation')?.value)||0,
+    sick:parseInt(document.getElementById('ob-sick')?.value)||0,
+    inLieu:parseInt(document.getElementById('ob-inlieu')?.value)||0,
+    bereavement:parseInt(document.getElementById('ob-bereavement')?.value)||0,
+    maternity:parseInt(document.getElementById('ob-maternity')?.value)||0,
+    paternal:parseInt(document.getElementById('ob-paternal')?.value)||0,
+    departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
+    other:parseInt(document.getElementById('ob-other')?.value)||0,
+  };
+  // Update USERS
+  const initials=(first[0]+(last[0]||'')).toUpperCase();
+  USERS[username]={...USERS[username],name:newName,role:w.role,dept:w.dept,initials};
+  if(newPass&&newPass.length>=6) USERS[username].password=newPass;
+  addNotif(`${newName}'s profile has been updated by HR.`,'info',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${newName}'s profile updated ✓`,'success');
+  setNav('workers');
+}
+
+function deactivateWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  if(!confirm(`Deactivate ${w.name}? They will no longer be able to log in.`))return;
+  w.active=false;
+  if(USERS[username])USERS[username].active=false;
+  addNotif(`${w.name} has been deactivated by HR.`,'error',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${w.name} deactivated`,'info');
+  renderAll();
+}
+
+function reactivateWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  w.active=true;
+  if(USERS[username])USERS[username].active=true;
+  addNotif(`${w.name} has been reactivated by HR.`,'success',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${w.name} reactivated ✓`,'success');
+  renderAll();
+}
+
+function exportWorkersCSV(){
+  const headers=['Username','Full Name','Job Title','Department','Role','Supervisor','Email','Start Date','Status','Vacation','Sick','In Lieu','Maternity','Paternal','Bereavement','Departmental','Other'];
+  const rows=state.workers.map(w=>[w.username,`"${w.name}"`,`"${w.jobTitle||''}"`,w.dept,w.role,`"${w.supervisor||''}"`,w.email,w.startDate,w.active?'Active':'Inactive',w.entitlements?.vacation||0,w.entitlements?.sick||0,w.entitlements?.inLieu||0,w.entitlements?.maternity||0,w.entitlements?.paternal||0,w.entitlements?.bereavement||0,w.entitlements?.departmental||0,w.entitlements?.other||0]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Workers_${TODAY}.csv`;
+  a.click();
+  toast('Workers CSV exported ✓','success');
+}
+
+
 function toast(msg,type='success'){
   const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';
   setTimeout(()=>t.style.display='none',3200);

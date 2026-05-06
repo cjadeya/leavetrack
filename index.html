@@ -955,7 +955,6 @@ function workerCard(w,supervisors){
   const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
   const roleLabel=w.role==='hr'?'HR Admin':w.role==='supervisor'?'Supervisor':'Employee';
   const e=w.entitlements||{};
-  const statusDetails=w.endDate?`Since ${w.startDate} · Ended ${w.endDate}`:`Since ${w.startDate} · Present`;
   return `
   <div class="worker-card" style="${!w.active?'opacity:.6':''}">
     <div class="worker-avatar${w.active?'':' inactive'}">${initials}</div>
@@ -966,7 +965,8 @@ function workerCard(w,supervisors){
         <span class="badge badge-type">${roleLabel}</span>
       </div>
       <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
-      <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email} · ${statusDetails}</div>
+      <div class="worker-meta" style="margin-top:2px">Start Date: ${w.startDate} · End Date: ${w.endDate || 'Present'}</div>
+      <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email}</div>
       <div class="worker-entitlements">
         ${[['Vacation',e.vacation],['Sick',e.sick],['In Lieu',e.inLieu],['Maternity',e.maternity],['Paternal',e.paternal],['Bereavement',e.bereavement],['Dept.',e.departmental],['Other',e.other]].filter(([,v])=>v>0).map(([k,v])=>`<span class="entitle-pill">${k}: ${v}d</span>`).join('')}
       </div>

@@ -670,6 +670,7 @@ function submitRequest(){
   if(travel&&!travelDest){toast('Please enter a travel destination.','error');return;}
   state.requests.unshift({id:state.nextId++,employee:state.user.name,dept,type,from,to,days,reason,status:'pending',supBy:sup,supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel,travelDest,travelPurpose,travelCost,travelSupApproval:travel?'Pending':'',travelHRApproval:travel?'Pending':'',submitted:TODAY});
   addNotif(`Your ${type} request (${from}) was submitted and is awaiting supervisor review.`,'info',false);
+  addNotif(`${state.user.name} submitted a new ${type} request (${from} to ${to}, ${days} days)`, 'pending', false);
   renderNotifBadge();renderNotifList();
   sendBrowserNotif('Leave Request Submitted','Your request has been sent to '+sup+' for approval.');
   toast(travel?'Request + Travel Authorization submitted! ✓':'Leave request submitted! ✓','success');
@@ -825,6 +826,9 @@ function decide(id,role,action){
     ?`${req.employee}'s ${req.type} request was ${role==='supervisor'?'supervisor-approved — now pending HR':'fully approved ✓'}`
     :`${req.employee}'s ${req.type} request was rejected.`;
   addNotif(notifText,d==='Approved'?'success':'error',false);
+  if (d === 'Approved') {
+    addNotif(`Your ${req.type} request (${req.from}) was ${role === 'supervisor' ? 'approved by supervisor' : 'fully approved by HR'} ✓`, 'success', false);
+  }
   renderNotifBadge();renderNotifList();
   sendBrowserNotif('Leave '+d,req.employee+' — '+req.type+' ('+req.from+')');
   toast(`${d} for ${req.employee}`,'success');

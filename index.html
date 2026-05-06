@@ -310,12 +310,27 @@ tr:hover td{background:#FAFAFA}
 const TODAY = new Date().toISOString().split('T')[0];
 const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Other'];
 
+const DEPARTMENTS = [
+  'President',
+  'Executive Secretary',
+  'Treasurer',
+  'Accountant',
+  'Administrative Assistant',
+  'Clerk',
+  'District Pastor',
+  'Human Resource Management',
+  'Information Technology',
+  'Cashier',
+  'Intern Pastor',
+  'Office Intern',
+];
+
 // ── USERS ─────────────────────────────────────────────────────────────────
 const USERS = {
-  sarah:   {password:'employee123',  name:'Sarah Johnson',  role:'employee',   dept:'Engineering', initials:'SJ'},
-  david:   {password:'supervisor123',name:'David Chen',     role:'supervisor', dept:'Engineering', initials:'DC'},
-  linda:   {password:'hr123',        name:'Linda Brown',    role:'hr',         dept:'HR',          initials:'LB'},
-  maria:   {password:'supervisor123',name:'Maria Santos',   role:'supervisor', dept:'Marketing',   initials:'MS'},
+  sarah:   {password:'employee123',  name:'Sarah Johnson',  role:'employee',   dept:'Information Technology',    initials:'SJ'},
+  david:   {password:'supervisor123',name:'David Chen',     role:'supervisor', dept:'Information Technology',    initials:'DC'},
+  linda:   {password:'hr123',        name:'Linda Brown',    role:'hr',         dept:'Human Resource Management', initials:'LB'},
+  maria:   {password:'supervisor123',name:'Maria Santos',   role:'supervisor', dept:'Administrative Assistant',  initials:'MS'},
 };
 
 // ── STATE ─────────────────────────────────────────────────────────────────
@@ -325,27 +340,27 @@ const state = {
   nextId: 11,
   notifications: [],
   workers: [
-    {username:'sarah',  name:'Sarah Johnson',  dept:'Engineering', role:'employee',   supervisor:'David Chen',  email:'sarah.johnson@company.com',  jobTitle:'Software Engineer',     startDate:'2024-01-15',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
-    {username:'david',  name:'David Chen',     dept:'Engineering', role:'supervisor', supervisor:'',            email:'david.chen@company.com',     jobTitle:'Engineering Lead',       startDate:'2022-03-01',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
-    {username:'linda',  name:'Linda Brown',    dept:'HR',          role:'hr',         supervisor:'',            email:'linda.brown@company.com',     jobTitle:'HR Manager',             startDate:'2021-06-01',active:true, entitlements:{vacation:20,sick:10,inLieu:5,maternity:0,paternal:15,bereavement:5,departmental:5,other:5}},
-    {username:'maria',  name:'Maria Santos',   dept:'Marketing',   role:'supervisor', supervisor:'',            email:'maria.santos@company.com',    jobTitle:'Marketing Lead',         startDate:'2023-02-14',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
-    {username:'marcus', name:'Marcus Lee',     dept:'Marketing',   role:'employee',   supervisor:'Maria Santos',email:'marcus.lee@company.com',      jobTitle:'Marketing Coordinator',  startDate:'2024-07-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
-    {username:'priya',  name:'Priya Nair',     dept:'Engineering', role:'employee',   supervisor:'David Chen',  email:'priya.nair@company.com',      jobTitle:'Frontend Developer',     startDate:'2023-11-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
-    {username:'james',  name:'James Okafor',   dept:'Finance',     role:'employee',   supervisor:'Linda Brown', email:'james.okafor@company.com',    jobTitle:'Financial Analyst',      startDate:'2025-01-10',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
-    {username:'diana',  name:'Diana Osei',     dept:'Finance',     role:'employee',   supervisor:'Linda Brown', email:'diana.osei@company.com',      jobTitle:'Accounts Payable',       startDate:'2023-05-20',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
-    {username:'carlos', name:'Carlos Rivera',  dept:'Operations',  role:'employee',   supervisor:'Maria Santos',email:'carlos.rivera@company.com',   jobTitle:'Operations Coordinator', startDate:'2024-09-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'sarah',  name:'Sarah Johnson',  dept:'Information Technology',    role:'employee',   supervisor:'David Chen',  email:'sarah.johnson@company.com',  jobTitle:'Software Engineer',          startDate:'2024-01-15',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'david',  name:'David Chen',     dept:'Information Technology',    role:'supervisor', supervisor:'',            email:'david.chen@company.com',     jobTitle:'IT Supervisor',              startDate:'2022-03-01',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'linda',  name:'Linda Brown',    dept:'Human Resource Management', role:'hr',         supervisor:'',            email:'linda.brown@company.com',     jobTitle:'HR Manager',                startDate:'2021-06-01',active:true, entitlements:{vacation:20,sick:10,inLieu:5,maternity:0,paternal:15,bereavement:5,departmental:5,other:5}},
+    {username:'maria',  name:'Maria Santos',   dept:'Administrative Assistant',  role:'supervisor', supervisor:'',            email:'maria.santos@company.com',    jobTitle:'Senior Admin Supervisor',   startDate:'2023-02-14',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'marcus', name:'Marcus Lee',     dept:'Accountant',                role:'employee',   supervisor:'Maria Santos',email:'marcus.lee@company.com',      jobTitle:'Junior Accountant',         startDate:'2024-07-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'priya',  name:'Priya Nair',     dept:'Information Technology',    role:'employee',   supervisor:'David Chen',  email:'priya.nair@company.com',      jobTitle:'Frontend Developer',        startDate:'2023-11-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'james',  name:'James Okafor',   dept:'Treasurer',                 role:'employee',   supervisor:'Linda Brown', email:'james.okafor@company.com',    jobTitle:'Financial Analyst',         startDate:'2025-01-10',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'diana',  name:'Diana Osei',     dept:'Cashier',                   role:'employee',   supervisor:'Linda Brown', email:'diana.osei@company.com',      jobTitle:'Senior Cashier',            startDate:'2023-05-20',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'carlos', name:'Carlos Rivera',  dept:'District Pastor',           role:'employee',   supervisor:'Maria Santos',email:'carlos.rivera@company.com',   jobTitle:'District Pastor',           startDate:'2024-09-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
   ],
   requests: [
-    {id:1,employee:'Sarah Johnson',dept:'Engineering',type:'Vacation',from:'2026-05-12',to:'2026-05-16',days:5,reason:'Family vacation',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
-    {id:2,employee:'Marcus Lee',dept:'Marketing',type:'Sick Leave',from:'2026-04-28',to:'2026-04-29',days:2,reason:'Flu symptoms',status:'approved',supBy:'Maria Santos',supDecision:'Approved',supDate:'2026-04-28',hrDecision:'Approved',hrDate:'2026-04-28',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-28'},
-    {id:3,employee:'Priya Nair',dept:'Engineering',type:'Departmental',from:'2026-05-20',to:'2026-05-21',days:2,reason:'Team conference',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-03',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Bridgetown, Barbados',travelPurpose:'Regional Tech Summit 2026',travelCost:'850',travelSupApproval:'Approved',travelHRApproval:'Pending',submitted:'2026-05-02'},
-    {id:4,employee:'James Okafor',dept:'Finance',type:'Vacation',from:'2026-06-02',to:'2026-06-06',days:5,reason:'Annual leave',status:'pending',supBy:'Linda Brown',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-03'},
-    {id:5,employee:'Sarah Johnson',dept:'Engineering',type:'Sick Leave',from:'2026-03-10',to:'2026-03-10',days:1,reason:'Doctor appointment',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-03-10',hrDecision:'Approved',hrDate:'2026-03-10',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-03-10'},
-    {id:6,employee:'Anya Patel',dept:'HR',type:'Bereavement',from:'2026-04-15',to:'2026-04-18',days:4,reason:'Family bereavement',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-04-15',hrDecision:'Approved',hrDate:'2026-04-15',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-15'},
-    {id:7,employee:'Carlos Rivera',dept:'Operations',type:'Vacation',from:'2026-07-01',to:'2026-07-10',days:8,reason:'Summer holidays',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Miami, USA',travelPurpose:'Operations Conference 2026',travelCost:'1200',travelSupApproval:'Pending',travelHRApproval:'Pending',submitted:'2026-05-04'},
-    {id:8,employee:'Diana Osei',dept:'Finance',type:'Maternity',from:'2026-06-01',to:'2026-08-31',days:65,reason:'Maternity leave — first child',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
-    {id:9,employee:'Kevin Thomas',dept:'Engineering',type:'Paternal',from:'2026-06-15',to:'2026-06-26',days:10,reason:'Paternal leave — newborn',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-11',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-10'},
-    {id:10,employee:'Marcia Brown',dept:'Marketing',type:'In Lieu Of',from:'2026-05-25',to:'2026-05-26',days:2,reason:'Worked public holidays (Apr 12-13)',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-05'},
+    {id:1,employee:'Sarah Johnson',dept:'Information Technology',type:'Vacation',from:'2026-05-12',to:'2026-05-16',days:5,reason:'Family vacation',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
+    {id:2,employee:'Marcus Lee',dept:'Accountant',type:'Sick Leave',from:'2026-04-28',to:'2026-04-29',days:2,reason:'Flu symptoms',status:'approved',supBy:'Maria Santos',supDecision:'Approved',supDate:'2026-04-28',hrDecision:'Approved',hrDate:'2026-04-28',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-28'},
+    {id:3,employee:'Priya Nair',dept:'Information Technology',type:'Departmental',from:'2026-05-20',to:'2026-05-21',days:2,reason:'Team conference',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-03',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Bridgetown, Barbados',travelPurpose:'Regional Tech Summit 2026',travelCost:'850',travelSupApproval:'Approved',travelHRApproval:'Pending',submitted:'2026-05-02'},
+    {id:4,employee:'James Okafor',dept:'Treasurer',type:'Vacation',from:'2026-06-02',to:'2026-06-06',days:5,reason:'Annual leave',status:'pending',supBy:'Linda Brown',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-03'},
+    {id:5,employee:'Sarah Johnson',dept:'Information Technology',type:'Sick Leave',from:'2026-03-10',to:'2026-03-10',days:1,reason:'Doctor appointment',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-03-10',hrDecision:'Approved',hrDate:'2026-03-10',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-03-10'},
+    {id:6,employee:'Anya Patel',dept:'Human Resource Management',type:'Bereavement',from:'2026-04-15',to:'2026-04-18',days:4,reason:'Family bereavement',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-04-15',hrDecision:'Approved',hrDate:'2026-04-15',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-15'},
+    {id:7,employee:'Carlos Rivera',dept:'District Pastor',type:'Vacation',from:'2026-07-01',to:'2026-07-10',days:8,reason:'Summer holidays',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Miami, USA',travelPurpose:'Operations Conference 2026',travelCost:'1200',travelSupApproval:'Pending',travelHRApproval:'Pending',submitted:'2026-05-04'},
+    {id:8,employee:'Diana Osei',dept:'Cashier',type:'Maternity',from:'2026-06-01',to:'2026-08-31',days:65,reason:'Maternity leave — first child',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01'},
+    {id:9,employee:'Kevin Thomas',dept:'Information Technology',type:'Paternal',from:'2026-06-15',to:'2026-06-26',days:10,reason:'Paternal leave — newborn',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-11',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-10'},
+    {id:10,employee:'Marcia Brown',dept:'Administrative Assistant',type:'In Lieu Of',from:'2026-05-25',to:'2026-05-26',days:2,reason:'Worked public holidays (Apr 12-13)',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-05'},
   ],
   balances:{
     'Sarah Johnson':{vacation:15,vacUsed:6,sick:10,sickUsed:1,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
@@ -601,7 +616,7 @@ function renderRequestForm(){
   <div class="card" style="max-width:720px">
     <div class="form-grid">
       <div class="form-group"><label>Leave Type</label><select id="fType">${LEAVE_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
-      <div class="form-group"><label>Department</label><select id="fDept"><option>Engineering</option><option>Marketing</option><option>Finance</option><option>HR</option><option>Operations</option></select></div>
+      <div class="form-group"><label>Department</label><select id="fDept">${DEPARTMENTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
       <div class="form-group"><label>From Date</label><input type="date" id="fFrom" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>To Date</label><input type="date" id="fTo" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>Working Days</label><input type="number" id="fDays" value="1" min="1" style="background:#F9FAFB"></div>
@@ -637,7 +652,7 @@ function calcDays(){
 
 function submitRequest(){
   const type=document.getElementById('fType')?.value||'Vacation';
-  const dept=document.getElementById('fDept')?.value||'Engineering';
+  const dept=document.getElementById('fDept')?.value||'Information Technology';
   const from=document.getElementById('fFrom')?.value||TODAY;
   const to=document.getElementById('fTo')?.value||TODAY;
   const days=parseInt(document.getElementById('fDays')?.value)||1;
@@ -978,7 +993,7 @@ function renderOnboard(prefill){
         <div class="form-group"><label>Email Address</label><input type="email" id="ob-email" placeholder="e.g. john.smith@company.com" value="${p.email||''}"></div>
         <div class="form-group"><label>Department</label>
           <select id="ob-dept">
-            ${['Engineering','Marketing','Finance','HR','Operations','Sales','Legal','Administration'].map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}
+            ${DEPARTMENTS.map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}
           </select>
         </div>
         <div class="form-group"><label>Start Date</label><input type="date" id="ob-start" value="${p.startDate||TODAY}"></div>

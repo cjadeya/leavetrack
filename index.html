@@ -751,7 +751,7 @@ function renderCalendar(){
 function renderPending(role){
   const pending=role==='supervisor'
     ?state.requests.filter(r=>r.supDecision==='Pending')
-    :state.requests.filter(r=>r.supDecision==='Approved'&&r.hrDecision==='Pending');
+    :state.requests.filter(r=>r.hrDecision==='Pending');
   return `
   <div class="page-title">${role==='supervisor'?'Leave Approvals — Supervisor':'Leave Approvals — HR'}</div>
   <div class="page-sub">${pending.length} request${pending.length!==1?'s':''} awaiting your decision.</div>
@@ -773,10 +773,10 @@ function renderPending(role){
     </div>
     ${r.reason?`<div class="approve-reason">📝 ${r.reason}</div>`:''}
     ${r.travel?`<div class="travel-badge-row">✈ Travel to ${r.travelDest} — ${r.travelPurpose}${r.travelCost?` · Est. $${parseInt(r.travelCost).toLocaleString()}`:''}</div>`:''}
-    ${role==='hr'?`<div style="font-size:12px;color:var(--txtgreen);font-weight:600;margin-bottom:10px">✓ Supervisor (${r.supBy}) approved on ${r.supDate}</div>`:''}
+    ${role==='hr'?`<div style="font-size:12px;color:${r.supDecision==='Approved'?'var(--txtgreen)':r.supDecision==='Rejected'?'#E24B4A':'var(--muted)'};font-weight:600;margin-bottom:10px">${r.supDecision==='Approved'?`✓ Supervisor (${r.supBy}) approved on ${r.supDate}`:r.supDecision==='Rejected'?'Supervisor rejected this request':'Awaiting supervisor review'}</div>`:''}
     <div class="approve-actions">
-      <button class="btn btn-sm btn-reject" onclick="decide(${r.id},'${role}','reject')">✕ Reject</button>
-      <button class="btn btn-sm btn-approve" onclick="decide(${r.id},'${role}','approve')">✓ Approve</button>
+      <button class="btn btn-sm btn-reject" ${role==='hr'&&r.supDecision!=='Approved'?'disabled title="Supervisor approval required first"':''} onclick="decide(${r.id},'${role}','reject')">✕ Reject</button>
+      <button class="btn btn-sm btn-approve" ${role==='hr'&&r.supDecision!=='Approved'?'disabled title="Supervisor approval required first"':''} onclick="decide(${r.id},'${role}','approve')">✓ Approve</button>
     </div>
   </div>`).join('')}`;
 }

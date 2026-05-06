@@ -953,6 +953,7 @@ function workerCard(w,supervisors){
   const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
   const roleLabel=w.role==='hr'?'HR Admin':w.role==='supervisor'?'Supervisor':'Employee';
   const e=w.entitlements||{};
+  const statusDetails=w.endDate?`Since ${w.startDate} · Ended ${w.endDate}`:`Since ${w.startDate} · Present`;
   return `
   <div class="worker-card" style="${!w.active?'opacity:.6':''}">
     <div class="worker-avatar${w.active?'':' inactive'}">${initials}</div>
@@ -963,7 +964,7 @@ function workerCard(w,supervisors){
         <span class="badge badge-type">${roleLabel}</span>
       </div>
       <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
-      <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email} · Since ${w.startDate}</div>
+      <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email} · ${statusDetails}</div>
       <div class="worker-entitlements">
         ${[['Vacation',e.vacation],['Sick',e.sick],['In Lieu',e.inLieu],['Maternity',e.maternity],['Paternal',e.paternal],['Bereavement',e.bereavement],['Dept.',e.departmental],['Other',e.other]].filter(([,v])=>v>0).map(([k,v])=>`<span class="entitle-pill">${k}: ${v}d</span>`).join('')}
       </div>
@@ -1000,7 +1001,10 @@ function renderOnboard(prefill){
           </select>
         </div>
         <div class="form-group"><label>Start Date</label><input type="date" id="ob-start" value="${p.startDate||TODAY}"></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="ob-end" value="${p.endDate||''}"></div>
+        <div class="form-group" style="grid-column: span 2;"><label><input type="checkbox" id="ob-present" ${p.endDate?'':'checked'}> Currently employed / present</label></div>
       </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Leave end date blank for employees who are still with the company.</div>
     </div>
 
     <!-- Role & Supervisor -->
@@ -1072,6 +1076,8 @@ function onboardWorker(){
   const email=document.getElementById('ob-email')?.value.trim();
   const dept=document.getElementById('ob-dept')?.value;
   const start=document.getElementById('ob-start')?.value;
+  const endDate=document.getElementById('ob-end')?.value;
+  const present=document.getElementById('ob-present')?.checked;
   const role=document.getElementById('ob-role')?.value;
   const sup=document.getElementById('ob-sup')?.value;
   const username=document.getElementById('ob-user')?.value.trim();
@@ -1089,6 +1095,7 @@ function onboardWorker(){
 
   const name=first+' '+last;
   const initials=(first[0]+(last[0]||'')).toUpperCase();
+  const employeeEndDate=present ? '' : (endDate||'');
   const entitlements={
     vacation:parseInt(document.getElementById('ob-vacation')?.value)||0,
     sick:parseInt(document.getElementById('ob-sick')?.value)||0,
@@ -1104,7 +1111,7 @@ function onboardWorker(){
   USERS[username]={password,name,role,dept,initials};
 
   // Add to workers directory
-  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,active:true,entitlements});
+  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,endDate:employeeEndDate,active:employeeEndDate?false:true,entitlements});
 
   // Seed empty balance
   state.balances[name]={
@@ -1137,6 +1144,7 @@ function onboardWorker(){
       <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">ROLE</span>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</div>
       <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">SUPERVISOR</span>${sup||'—'}</div>
       <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">START DATE</span>${start}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">STATUS</span>${employeeEndDate?`Ended ${employeeEndDate}`:'Present'}</div>
     </div>
   </div>
   <div class="card" style="max-width:560px">
@@ -1183,6 +1191,8 @@ function saveWorkerEdit(username){
   if(!w)return;
   const first=document.getElementById('ob-first')?.value.trim();
   const last=document.getElementById('ob-last')?.value.trim();
+  const present=document.getElementById('ob-present')?.checked;
+  const endDate=document.getElementById('ob-end')?.value;
   const errEl=document.getElementById('ob-error');
   if(!first||!last){errEl.textContent='Full name is required.';errEl.style.display='block';return;}
   errEl.style.display='none';
@@ -1194,6 +1204,8 @@ function saveWorkerEdit(username){
   w.email=document.getElementById('ob-email')?.value.trim()||w.email;
   w.dept=document.getElementById('ob-dept')?.value||w.dept;
   w.startDate=document.getElementById('ob-start')?.value||w.startDate;
+  w.endDate = present ? '' : (endDate||'');
+  w.active = present || !w.endDate;
   w.role=document.getElementById('ob-role')?.value||w.role;
   w.supervisor=document.getElementById('ob-sup')?.value||'';
   w.entitlements={
@@ -1240,8 +1252,8 @@ function reactivateWorker(username){
 }
 
 function exportWorkersCSV(){
-  const headers=['Username','Full Name','Job Title','Department','Role','Supervisor','Email','Start Date','Status','Vacation','Sick','In Lieu','Maternity','Paternal','Bereavement','Departmental','Other'];
-  const rows=state.workers.map(w=>[w.username,`"${w.name}"`,`"${w.jobTitle||''}"`,w.dept,w.role,`"${w.supervisor||''}"`,w.email,w.startDate,w.active?'Active':'Inactive',w.entitlements?.vacation||0,w.entitlements?.sick||0,w.entitlements?.inLieu||0,w.entitlements?.maternity||0,w.entitlements?.paternal||0,w.entitlements?.bereavement||0,w.entitlements?.departmental||0,w.entitlements?.other||0]);
+  const headers=['Username','Full Name','Job Title','Department','Role','Supervisor','Email','Start Date','End Date','Status','Vacation','Sick','In Lieu','Maternity','Paternal','Bereavement','Departmental','Other'];
+  const rows=state.workers.map(w=>[w.username,`"${w.name}"`,`"${w.jobTitle||''}"`,w.dept,w.role,`"${w.supervisor||''}"`,w.email,w.startDate,w.endDate||'',w.active?'Active':'Inactive',w.entitlements?.vacation||0,w.entitlements?.sick||0,w.entitlements?.inLieu||0,w.entitlements?.maternity||0,w.entitlements?.paternal||0,w.entitlements?.bereavement||0,w.entitlements?.departmental||0,w.entitlements?.other||0]);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');

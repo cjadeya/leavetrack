@@ -550,9 +550,20 @@ function printPage(){
   window.print();
 }
 
+function getExportableLeaveRequests(){
+  if(state.user.role==='hr') return state.requests;
+  return state.requests.filter(r=>r.employee===state.user.name);
+}
+
+function getExportableTravelRequests(){
+  if(state.user.role==='hr') return state.requests.filter(r=>r.travel);
+  return state.requests.filter(r=>r.travel&&r.employee===state.user.name);
+}
+
 function exportCSV(){
+  const allowedRequests=getExportableLeaveRequests();
   const headers=['ID','Employee','Department','Leave Type','From','To','Days','Reason','Submitted','Supervisor','Sup. Decision','Sup. Date','HR Decision','HR Date','Travel Required','Travel Destination','Travel Purpose','Est. Cost','Status'];
-  const rows=state.requests.map(r=>[
+  const rows=allowedRequests.map(r=>[
     'LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,r.from,r.to,r.days,
     `"${(r.reason||'').replace(/"/g,'""')}"`,r.submitted,r.supBy||'',r.supDecision||'Pending',r.supDate||'',
     r.hrDecision||'Pending',r.hrDate||'',r.travel?'Yes':'No',
@@ -565,11 +576,12 @@ function exportCSV(){
   a.href=URL.createObjectURL(blob);
   a.download=`LeaveTrack_Export_${TODAY}.csv`;
   a.click();
-  toast('CSV exported successfully ✓','success');
+  toast(allowedRequests.length?
+    'CSV exported successfully ✓':'No leave requests available for export.','success');
 }
 
 function exportTravelCSV(){
-  const travelReqs=state.requests.filter(r=>r.travel);
+  const travelReqs=getExportableTravelRequests();
   const headers=['Leave Ref','Employee','Department','Leave Type','Travel Destination','Purpose','Est. Cost','Depart','Return','Sup. Travel Approval','HR Travel Approval'];
   const rows=travelReqs.map(r=>['LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,`"${r.travelDest}"`,`"${r.travelPurpose}"`,r.travelCost||0,r.from,r.to,r.travelSupApproval||'Pending',r.travelHRApproval||'Pending']);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
@@ -578,7 +590,8 @@ function exportTravelCSV(){
   a.href=URL.createObjectURL(blob);
   a.download=`LeaveTrack_Travel_${TODAY}.csv`;
   a.click();
-  toast('Travel CSV exported ✓','purple');
+  toast(travelReqs.length?
+    'Travel CSV exported ✓':'No travel requests available for export.','purple');
 }
 
 // ── EMPLOYEE VIEWS ────────────────────────────────────────────────────────

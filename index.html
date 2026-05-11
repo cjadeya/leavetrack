@@ -26,17 +26,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;fo
 .login-field input:focus,.login-field select:focus{outline:none;border-color:var(--green)}
 .login-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
 .login-btn:hover{background:var(--dkgreen)}
-.login-btn:disabled{background:#9CA3AF;cursor:not-allowed}
 .login-error{color:var(--txtred);font-size:12px;margin-top:8px;display:none}
 .login-hint{background:var(--bg);border-radius:8px;padding:12px;margin-top:18px;font-size:11px;color:var(--muted);line-height:1.8}
 .login-hint b{color:var(--text)}
-
-/* ── LOADING OVERLAY ── */
-#loading-overlay{position:fixed;inset:0;background:rgba(247,248,250,.88);display:none;align-items:center;justify-content:center;z-index:8500;flex-direction:column;gap:14px}
-#loading-overlay.show{display:flex}
-.loading-spinner{width:38px;height:38px;border:3px solid #E5E7EB;border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
-.loading-msg{font-size:13px;font-weight:600;color:var(--muted)}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── APP SHELL ── */
 .app{display:flex;flex-direction:column;min-height:100vh;display:none}
@@ -64,7 +56,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;fo
 .notif-item.unread{background:#F0FDF9}
 .notif-item.unread:hover{background:#E6FBF4}
 .notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.notif-text{font-size:12px;line-height:1.5;flex:1;color:#374151}
+.notif-text{font-size:12px;line-height:1.5;flex:1;color:#E24B4A}
 .notif-time{font-size:10px;color:var(--muted);margin-top:2px}
 .notif-empty{padding:32px 16px;text-align:center;font-size:13px;color:var(--muted)}
 .notif-footer{padding:10px 16px;border-top:1px solid var(--border);text-align:center}
@@ -242,13 +234,7 @@ tr:hover td{background:#FAFAFA}
 </head>
 <body>
 
-<!-- ══ LOADING OVERLAY ════════════════════════════════════════════════════ -->
-<div id="loading-overlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-msg" id="loading-msg">Loading...</div>
-</div>
-
-<!-- ══ LOGIN SCREEN ══════════════════════════════════════════════════════ -->
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════════════════ -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
@@ -264,12 +250,18 @@ tr:hover td{background:#FAFAFA}
       <label>Password</label>
       <input type="password" id="login-pass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
     <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
+    <div class="login-hint">
+      <b>Demo credentials:</b><br>
+      sarah / employee123 &nbsp;(Employee)<br>
+      david / supervisor123 &nbsp;(Supervisor)<br>
+      linda / hr123 &nbsp;(HR Admin)
+    </div>
   </div>
 </div>
 
-<!-- ══ APP SHELL ══════════════════════════════════════════════════════════ -->
+<!-- ══ APP SHELL ══════════════════════════════════════════════════════ -->
 <div class="app" id="app">
   <!-- TOP BAR -->
   <div class="topbar">
@@ -278,6 +270,7 @@ tr:hover td{background:#FAFAFA}
       LeaveTrack
     </div>
     <div class="topbar-right">
+      <!-- Notification Bell -->
       <div class="notif-wrap">
         <button class="notif-bell" onclick="toggleNotifPanel()" id="notif-bell" title="Notifications">🔔
           <span class="notif-badge" id="notif-badge" style="display:none">0</span>
@@ -294,9 +287,9 @@ tr:hover td{background:#FAFAFA}
         </div>
       </div>
       <div class="user-chip">
-        <div class="user-avatar" id="user-avatar">?</div>
-        <span id="user-name">—</span>
-        &nbsp;<span style="opacity:.6;font-size:10px" id="user-role-label">—</span>
+        <div class="user-avatar" id="user-avatar">S</div>
+        <span id="user-name">Sarah Johnson</span>
+        &nbsp;<span style="opacity:.6;font-size:10px" id="user-role-label">Employee</span>
       </div>
       <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
@@ -316,191 +309,97 @@ tr:hover td{background:#FAFAFA}
 
 <div id="toast"></div>
 
-<!-- ══ SUPABASE SDK ═══════════════════════════════════════════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// ════════════════════════════════════════════════════════════════════════
-// ── SUPABASE CONFIG — replace these two values with your project details
-//    Get them from: https://supabase.com → your project → Settings → API
-// ════════════════════════════════════════════════════════════════════════
-const SUPABASE_URL      = 'YOUR_SUPABASE_PROJECT_URL';   // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';      // starts with eyJ...
-
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ── CONSTANTS ─────────────────────────────────────────────────────────────
 const TODAY = new Date().toISOString().split('T')[0];
 const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Other'];
+
 const DEPARTMENTS = [
-  'President','Executive Secretary','Treasurer','Accountant','Administrative Assistant',
-  'Clerk','District Pastor','Human Resource Management','Information Technology',
-  'Cashier','Intern Pastor','Office Intern','Bible Instructor',
+  'President',
+  'Executive Secretary',
+  'Treasurer',
+  'Accountant',
+  'Administrative Assistant',
+  'Clerk',
+  'District Pastor',
+  'Human Resource Management',
+  'Information Technology',
+  'Cashier',
+  'Intern Pastor',
+  'Office Intern',
+  'Bible Instructor',
 ];
+
+// ── USERS ─────────────────────────────────────────────────────────────────
+const USERS = {
+  sarah:   {password:'employee123',  name:'Sarah Johnson',  role:'employee',   dept:'Information Technology',    initials:'SJ'},
+  david:   {password:'supervisor123',name:'David Chen',     role:'supervisor', dept:'Information Technology',    initials:'DC'},
+  linda:   {password:'hr123',        name:'Linda Brown',    role:'hr',         dept:'Human Resource Management', initials:'LB'},
+  maria:   {password:'supervisor123',name:'Maria Santos',   role:'supervisor', dept:'Administrative Assistant',  initials:'MS'},
+  john:    {password:'employee123',  name:'John Doe',       role:'employee',   dept:'Bible Instructor',          initials:'JD'},
+};
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 const state = {
   user: null,
   nav: 'dashboard',
+  nextId: 11,
   notifications: [],
-  workers: [],    // loaded from Supabase
-  requests: [],   // loaded from Supabase
-  balances: {},   // loaded from Supabase
+  workers: [
+    {username:'sarah',  name:'Sarah Johnson',  dept:'Information Technology',    role:'employee',   supervisor:'David Chen',  email:'sarah.johnson@company.com',  jobTitle:'Software Engineer',          startDate:'2024-01-15',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'david',  name:'David Chen',     dept:'Information Technology',    role:'supervisor', supervisor:'',            email:'david.chen@company.com',     jobTitle:'IT Supervisor',              startDate:'2022-03-01',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'linda',  name:'Linda Brown',    dept:'Human Resource Management', role:'hr',         supervisor:'',            email:'linda.brown@company.com',     jobTitle:'HR Manager',                startDate:'2021-06-01',active:true, entitlements:{vacation:20,sick:10,inLieu:5,maternity:0,paternal:15,bereavement:5,departmental:5,other:5}},
+    {username:'maria',  name:'Maria Santos',   dept:'Administrative Assistant',  role:'supervisor', supervisor:'',            email:'maria.santos@company.com',    jobTitle:'Senior Admin Supervisor',   startDate:'2023-02-14',active:true, entitlements:{vacation:18,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'marcus', name:'Marcus Lee',     dept:'Accountant',                role:'employee',   supervisor:'Maria Santos',email:'marcus.lee@company.com',      jobTitle:'Junior Accountant',         startDate:'2024-07-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'priya',  name:'Priya Nair',     dept:'Information Technology',    role:'employee',   supervisor:'David Chen',  email:'priya.nair@company.com',      jobTitle:'Frontend Developer',        startDate:'2023-11-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'james',  name:'James Okafor',   dept:'Treasurer',                 role:'employee',   supervisor:'Linda Brown', email:'james.okafor@company.com',    jobTitle:'Financial Analyst',         startDate:'2025-01-10',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+    {username:'diana',  name:'Diana Osei',     dept:'Cashier',                   role:'employee',   supervisor:'Linda Brown', email:'diana.osei@company.com',      jobTitle:'Senior Cashier',            startDate:'2023-05-20',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:90,paternal:0,bereavement:5,departmental:5,other:3}},
+    {username:'carlos', name:'Carlos Rivera',  dept:'District Pastor',           role:'employee',   supervisor:'Maria Santos',email:'carlos.rivera@company.com',   jobTitle:'District Pastor',           startDate:'2024-09-01',active:true, entitlements:{vacation:15,sick:10,inLieu:3,maternity:0,paternal:15,bereavement:5,departmental:5,other:3}},
+  ],
+  requests: [
+    {id:1,employee:'Sarah Johnson',dept:'Information Technology',type:'Vacation',from:'2026-05-12',to:'2026-05-16',days:5,reason:'Family vacation',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01T08:45'},
+    {id:2,employee:'Marcus Lee',dept:'Accountant',type:'Sick Leave',from:'2026-04-28',to:'2026-04-29',days:2,reason:'Flu symptoms',status:'approved',supBy:'Maria Santos',supDecision:'Approved',supDate:'2026-04-28',hrDecision:'Approved',hrDate:'2026-04-28',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-28T07:32'},
+    {id:3,employee:'Priya Nair',dept:'Information Technology',type:'Departmental',from:'2026-05-20',to:'2026-05-21',days:2,reason:'Team conference',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-03',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Bridgetown, Barbados',travelPurpose:'Regional Tech Summit 2026',travelCost:'850',travelSupApproval:'Approved',travelHRApproval:'Pending',submitted:'2026-05-02T10:15'},
+    {id:4,employee:'James Okafor',dept:'Treasurer',type:'Vacation',from:'2026-06-02',to:'2026-06-06',days:5,reason:'Annual leave',status:'pending',supBy:'Linda Brown',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-03T14:22'},
+    {id:5,employee:'Sarah Johnson',dept:'Information Technology',type:'Sick Leave',from:'2026-03-10',to:'2026-03-10',days:1,reason:'Doctor appointment',status:'approved',supBy:'David Chen',supDecision:'Approved',supDate:'2026-03-10',hrDecision:'Approved',hrDate:'2026-03-10',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-03-10T09:05'},
+    {id:6,employee:'Anya Patel',dept:'Human Resource Management',type:'Bereavement',from:'2026-04-15',to:'2026-04-18',days:4,reason:'Family bereavement',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-04-15',hrDecision:'Approved',hrDate:'2026-04-15',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-04-15T11:30'},
+    {id:7,employee:'Carlos Rivera',dept:'District Pastor',type:'Vacation',from:'2026-07-01',to:'2026-07-10',days:8,reason:'Summer holidays',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:true,travelDest:'Miami, USA',travelPurpose:'Operations Conference 2026',travelCost:'1200',travelSupApproval:'Pending',travelHRApproval:'Pending',submitted:'2026-05-04T16:47'},
+    {id:8,employee:'Diana Osei',dept:'Cashier',type:'Maternity',from:'2026-06-01',to:'2026-08-31',days:65,reason:'Maternity leave — first child',status:'approved',supBy:'Linda Brown',supDecision:'Approved',supDate:'2026-05-02',hrDecision:'Approved',hrDate:'2026-05-03',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-01T13:10'},
+    {id:9,employee:'Kevin Thomas',dept:'Information Technology',type:'Paternal',from:'2026-06-15',to:'2026-06-26',days:10,reason:'Paternal leave — newborn',status:'pending',supBy:'David Chen',supDecision:'Approved',supDate:'2026-05-11',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-10T09:55'},
+    {id:10,employee:'Marcia Brown',dept:'Administrative Assistant',type:'In Lieu Of',from:'2026-05-25',to:'2026-05-26',days:2,reason:'Worked public holidays (Apr 12-13)',status:'pending',supBy:'Maria Santos',supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel:false,travelDest:'',travelPurpose:'',travelCost:'',travelSupApproval:'',travelHRApproval:'',submitted:'2026-05-05T08:20'},
+  ],
+  balances:{
+    'Sarah Johnson':{vacation:15,vacUsed:6,sick:10,sickUsed:1,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Marcus Lee':{vacation:15,vacUsed:2,sick:10,sickUsed:2,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Priya Nair':{vacation:15,vacUsed:2,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:2},
+    'James Okafor':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0},
+    'Diana Osei':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,maternity:90,maternityUsed:65,dept:5,deptUsed:0},
+    'Kevin Thomas':{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,paternal:15,paternalUsed:10,dept:5,deptUsed:0},
+  }
 };
 
-// ── LOADING OVERLAY ───────────────────────────────────────────────────────
-function showLoading(msg='Loading…'){
-  document.getElementById('loading-msg').textContent=msg;
-  document.getElementById('loading-overlay').classList.add('show');
-}
-function hideLoading(){
-  document.getElementById('loading-overlay').classList.remove('show');
-}
-
-// ── DATA MAPPERS (Supabase snake_case → app camelCase) ────────────────────
-function mapWorker(w){
-  return {
-    username:   w.username,
-    name:       w.name,
-    dept:       w.dept       || '',
-    role:       w.role       || 'employee',
-    supervisor: w.supervisor || '',
-    email:      w.email      || '',
-    jobTitle:   w.job_title  || '',
-    startDate:  w.start_date || '',
-    endDate:    w.end_date   || '',
-    active:     w.active !== false,
-    initials:   w.initials   || (w.name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase(),
-    entitlements: w.entitlements || {},
-  };
-}
-
-function mapRequest(r){
-  return {
-    id:               r.id,
-    employee:         r.employee         || '',
-    dept:             r.dept             || '',
-    type:             r.type             || 'Vacation',
-    from:             r.from_date        || '',
-    to:               r.to_date          || '',
-    days:             r.days             || 0,
-    reason:           r.reason           || '',
-    status:           r.status           || 'pending',
-    supBy:            r.sup_by           || '',
-    supDecision:      r.sup_decision     || 'Pending',
-    supDate:          r.sup_date         || '',
-    hrDecision:       r.hr_decision      || 'Pending',
-    hrDate:           r.hr_date          || '',
-    travel:           r.travel           || false,
-    travelDest:       r.travel_dest      || '',
-    travelPurpose:    r.travel_purpose   || '',
-    travelCost:       r.travel_cost      || '',
-    travelSupApproval:r.travel_sup_approval || '',
-    travelHRApproval: r.travel_hr_approval  || '',
-    submitted:        r.submitted        || '',
-  };
-}
-
-function mapBalance(b){
-  return {
-    vacation:      b.vacation       || 0,
-    vacUsed:       b.vac_used       || 0,
-    sick:          b.sick           || 0,
-    sickUsed:      b.sick_used      || 0,
-    inLieu:        b.in_lieu        || 0,
-    inLieuUsed:    b.in_lieu_used   || 0,
-    dept:          b.dept_days      || 0,
-    deptUsed:      b.dept_used      || 0,
-    maternity:     b.maternity      || 0,
-    maternityUsed: b.maternity_used || 0,
-    paternal:      b.paternal       || 0,
-    paternalUsed:  b.paternal_used  || 0,
-  };
-}
-
-// ── LOAD ALL DATA FROM SUPABASE ───────────────────────────────────────────
-async function loadAllData(){
-  const [wRes, rRes, bRes] = await Promise.all([
-    sb.from('workers').select('*').order('name'),
-    sb.from('leave_requests').select('*').order('id', {ascending:false}),
-    sb.from('balances').select('*'),
-  ]);
-  if(wRes.error) throw new Error('Workers: '+wRes.error.message);
-  if(rRes.error) throw new Error('Requests: '+rRes.error.message);
-  if(bRes.error) throw new Error('Balances: '+bRes.error.message);
-
-  state.workers  = (wRes.data||[]).map(mapWorker);
-  state.requests = (rRes.data||[]).map(mapRequest);
-  state.balances = {};
-  (bRes.data||[]).forEach(b=>{ state.balances[b.employee_name]=mapBalance(b); });
-}
-
 // ── LOGIN / LOGOUT ────────────────────────────────────────────────────────
-async function doLogin(){
-  // Guard: check config
-  if(SUPABASE_URL==='YOUR_SUPABASE_PROJECT_URL'){
-    document.getElementById('login-error').textContent='⚠ Supabase is not configured yet. Open index.html and set SUPABASE_URL and SUPABASE_ANON_KEY.';
-    document.getElementById('login-error').style.display='block';
-    return;
-  }
-
-  const u    = document.getElementById('login-user').value.trim().toLowerCase();
-  const p    = document.getElementById('login-pass').value;
-  const errEl= document.getElementById('login-error');
-  const btn  = document.getElementById('login-btn');
-
-  if(!u||!p){ errEl.textContent='Please enter your username and password.'; errEl.style.display='block'; return; }
-
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  const usr=USERS[u];
+  const workerRecord=state.workers.find(w=>w.username===u);
+  const errEl=document.getElementById('login-error');
+  if(!usr||usr.password!==p){errEl.textContent='Incorrect username or password. Please try again.';errEl.style.display='block';return;}
+  if(workerRecord&&workerRecord.active===false){errEl.textContent='This account has been deactivated. Please contact HR.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  btn.disabled=true; btn.textContent='Signing in…';
-  showLoading('Authenticating…');
-
-  try {
-    // Look up worker by username + password (plain-text for demo; use Supabase Auth for production)
-    const {data, error} = await sb.from('workers')
-      .select('*')
-      .eq('username', u)
-      .eq('password', p)
-      .single();
-
-    if(error || !data){
-      errEl.textContent='Incorrect username or password. Please try again.';
-      errEl.style.display='block';
-      return;
-    }
-    if(data.active===false){
-      errEl.textContent='This account has been deactivated. Please contact HR.';
-      errEl.style.display='block';
-      return;
-    }
-
-    state.user = mapWorker(data);
-    state.user.username = u;
-    state.nav  = MENUS[state.user.role][0].id;
-
-    showLoading('Loading your data…');
-    await loadAllData();
-
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='flex';
-    document.getElementById('user-name').textContent      = state.user.name;
-    document.getElementById('user-role-label').textContent= state.user.role==='hr'?'HR Admin':state.user.role.charAt(0).toUpperCase()+state.user.role.slice(1);
-    document.getElementById('user-avatar').textContent    = state.user.initials;
-
-    seedNotifications();
-    renderAll();
-
-  } catch(err){
-    errEl.textContent='Connection error: '+err.message;
-    errEl.style.display='block';
-  } finally {
-    hideLoading();
-    btn.disabled=false; btn.textContent='Sign In →';
-  }
+  state.user={...usr,username:u};
+  state.nav=MENUS[usr.role][0].id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name').textContent=usr.name;
+  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
+  document.getElementById('user-avatar').textContent=usr.initials;
+  seedNotifications();
+  renderAll();
 }
 
 function doLogout(){
-  state.user=null; state.workers=[]; state.requests=[]; state.balances={}; state.notifications=[];
+  state.user=null;
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('login-user').value='';
@@ -513,18 +412,22 @@ function seedNotifications(){
   const role=state.user.role;
   state.notifications=[];
   if(role==='employee'){
-    const myApproved=state.requests.filter(r=>r.employee===state.user.name&&r.status==='approved');
-    myApproved.slice(0,2).forEach(r=>addNotif(`Your ${r.type} request (${r.from}) was fully approved ✓`,'success',true));
+    addNotif('Your vacation request (May 12–16) was approved by HR ✓','success',true);
+    addNotif('Sick leave (Mar 10) was fully approved ✓','success',true);
     addNotif('New leave policy update — check HR announcements','info',false);
   } else if(role==='supervisor'){
-    const myPending=state.requests.filter(r=>r.supBy===state.user.name&&r.supDecision==='Pending');
-    myPending.forEach(r=>addNotif(`${r.employee} submitted a ${r.type} request (${r.from})`,'pending',false));
+    addNotif('James Okafor submitted a 5-day vacation request','pending',false);
+    addNotif('Marcia Brown submitted an In Lieu Of request','pending',false);
+    addNotif('Carlos Rivera submitted a vacation + travel request','pending',false);
+    addNotif('Kevin Thomas paternal leave needs your approval','pending',false);
   } else {
-    const hrPending=state.requests.filter(r=>r.hrDecision==='Pending'&&r.supDecision==='Approved');
-    hrPending.forEach(r=>addNotif(`${r.employee} leave passed supervisor — needs HR review`,'pending',false));
+    addNotif('Priya Nair leave approved by supervisor — needs HR review','pending',false);
+    addNotif('Kevin Thomas paternal leave passed supervisor — needs HR','pending',false);
+    addNotif('Travel authorization for Priya Nair needs HR approval','pending',false);
     addNotif('Monthly leave report is ready to export','info',true);
   }
-  renderNotifBadge(); renderNotifList();
+  renderNotifBadge();
+  renderNotifList();
 }
 
 function addNotif(text,type,read){
@@ -533,11 +436,13 @@ function addNotif(text,type,read){
   const timeStr=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   state.notifications.unshift({id:Date.now()+Math.random(),text,type,read,color:colors[type]||'#6B7280',time:timeStr});
 }
+
 function renderNotifBadge(){
   const unread=state.notifications.filter(n=>!n.read).length;
   const badge=document.getElementById('notif-badge');
   if(badge){badge.textContent=unread;badge.style.display=unread>0?'flex':'none';}
 }
+
 function renderNotifList(){
   const el=document.getElementById('notif-list');
   if(!el)return;
@@ -548,22 +453,41 @@ function renderNotifList(){
       <div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
     </div>`).join('');
 }
-function markRead(id){ const n=state.notifications.find(x=>String(x.id)===String(id));if(n)n.read=true;renderNotifBadge();renderNotifList(); }
-function clearAllNotifs(){ state.notifications.forEach(n=>n.read=true);renderNotifBadge();renderNotifList(); }
-function toggleNotifPanel(){ document.getElementById('notif-panel').classList.toggle('open'); }
-function requestBrowserNotifs(){
-  if(!('Notification' in window)){toast('Browser notifications not supported.','error');return;}
-  Notification.requestPermission().then(p=>{ if(p==='granted')toast('Browser notifications enabled! ✓','success'); else toast('Permission denied.','error'); });
+
+function markRead(id){
+  const n=state.notifications.find(x=>String(x.id)===String(id));
+  if(n)n.read=true;
+  renderNotifBadge();renderNotifList();
 }
+
+function clearAllNotifs(){
+  state.notifications.forEach(n=>n.read=true);
+  renderNotifBadge();renderNotifList();
+}
+
+function toggleNotifPanel(){
+  document.getElementById('notif-panel').classList.toggle('open');
+}
+
+function requestBrowserNotifs(){
+  if(!('Notification' in window)){toast('Browser notifications not supported in this browser.','error');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted')toast('Browser notifications enabled! ✓','success');
+    else toast('Notification permission denied.','error');
+  });
+}
+
 function sendBrowserNotif(title,body){
   if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
-    new Notification(title,{body});
+    new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📅</text></svg>'});
   }
 }
+
+// close notif panel when clicking outside
 document.addEventListener('click',e=>{
   const panel=document.getElementById('notif-panel');
   const bell=document.getElementById('notif-bell');
-  if(panel&&!panel.contains(e.target)&&bell&&!bell.contains(e.target))panel.classList.remove('open');
+  if(panel&&!panel.contains(e.target)&&!bell.contains(e.target))panel.classList.remove('open');
 });
 
 // ── MENUS ─────────────────────────────────────────────────────────────────
@@ -602,6 +526,7 @@ function typeBadge(t){return `<span class="badge" style="${TYPE_COLORS[t]||TYPE_
 function emptyState(icon,txt,sub=''){return `<div class="empty-state"><div style="font-size:36px;margin-bottom:10px">${icon}</div><div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:4px">${txt}</div>${sub?`<div style="font-size:12px">${sub}</div>`:''}</div>`;}
 function barHtml(used,total,color){const p=total>0?Math.min(100,(used/total)*100).toFixed(0):0;return `<div class="bar"><div class="bar-fill" style="width:${p}%;background:${color}"></div></div>`;}
 function fmtSubmitted(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'})+' · '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+
 function setNav(id){state.nav=id;renderAll();}
 
 function renderAll(){
@@ -611,13 +536,13 @@ function renderAll(){
     items.map(n=>`<div class="nav-item${state.nav===n.id?' active':''}" onclick="setNav('${n.id}')">
       <span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('');
   const c=document.getElementById('content');
-  const hdr=`<div id="print-header"><h2>LeaveTrack — Leave Management Report</h2><p id="print-date">Printed: ${new Date().toLocaleString()}</p></div>`;
+  const first=`<div id="print-header"><h2>LeaveTrack — Leave Management Report</h2><p id="print-date">Printed: ${new Date().toLocaleString()}</p></div>`;
   const views={
     employee:{dashboard:renderEmpDash,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar},
     supervisor:{pending:()=>renderPending('supervisor'),travel_pending:()=>renderTravelPending('supervisor'),team:renderTeam,all:renderAllRequests},
     hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests,workers:renderWorkers,onboard:renderOnboard}
   };
-  c.innerHTML=hdr+((views[state.user.role]||{})[state.nav]||renderEmpDash)();
+  c.innerHTML=first+((views[state.user.role]||{})[state.nav]||renderEmpDash)();
 }
 
 // ── PRINT / EXPORT ────────────────────────────────────────────────────────
@@ -625,44 +550,62 @@ function printPage(){
   document.getElementById('print-date').textContent='Printed by: '+state.user.name+' on '+new Date().toLocaleString();
   window.print();
 }
+
 function getExportableLeaveRequests(){
   if(state.user.role==='hr') return state.requests;
   if(state.user.role==='supervisor') return state.requests.filter(r=>r.supBy===state.user.name);
   return state.requests.filter(r=>r.employee===state.user.name);
 }
+
 function getExportableTravelRequests(){
   if(state.user.role==='hr') return state.requests.filter(r=>r.travel);
   if(state.user.role==='supervisor') return state.requests.filter(r=>r.travel&&r.supBy===state.user.name);
   return state.requests.filter(r=>r.travel&&r.employee===state.user.name);
 }
+
 function exportCSV(){
-  const reqs=getExportableLeaveRequests();
+  const allowedRequests=getExportableLeaveRequests();
   const headers=['ID','Employee','Department','Leave Type','From','To','Days','Reason','Submitted','Supervisor','Sup. Decision','Sup. Date','HR Decision','HR Date','Travel Required','Travel Destination','Travel Purpose','Est. Cost','Status'];
-  const rows=reqs.map(r=>['LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,r.from,r.to,r.days,`"${(r.reason||'').replace(/"/g,'""')}"`,fmtSubmitted(r.submitted),r.supBy||'',r.supDecision||'Pending',r.supDate||'',r.hrDecision||'Pending',r.hrDate||'',r.travel?'Yes':'No',`"${(r.travelDest||'').replace(/"/g,'""')}"`,`"${(r.travelPurpose||'').replace(/"/g,'""')}"`,r.travelCost||'',r.status]);
+  const rows=allowedRequests.map(r=>[
+    'LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,r.from,r.to,r.days,
+    `"${(r.reason||'').replace(/"/g,'""')}"`,r.submitted,r.supBy||'',r.supDecision||'Pending',r.supDate||'',
+    r.hrDecision||'Pending',r.hrDate||'',r.travel?'Yes':'No',
+    `"${(r.travelDest||'').replace(/"/g,'""')}"`,`"${(r.travelPurpose||'').replace(/"/g,'""')}"`,
+    r.travelCost||'',r.status
+  ]);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`LeaveTrack_Export_${TODAY}.csv`;a.click();
-  toast(reqs.length?'CSV exported ✓':'No records to export.','success');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Export_${TODAY}.csv`;
+  a.click();
+  toast(allowedRequests.length?
+    'CSV exported successfully ✓':'No leave requests available for export.','success');
 }
+
 function exportTravelCSV(){
-  const reqs=getExportableTravelRequests();
+  const travelReqs=getExportableTravelRequests();
   const headers=['Leave Ref','Employee','Department','Leave Type','Travel Destination','Purpose','Est. Cost','Depart','Return','Sup. Travel Approval','HR Travel Approval'];
-  const rows=reqs.map(r=>['LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,`"${r.travelDest}"`,`"${r.travelPurpose}"`,r.travelCost||0,r.from,r.to,r.travelSupApproval||'Pending',r.travelHRApproval||'Pending']);
+  const rows=travelReqs.map(r=>['LR-'+String(r.id).padStart(3,'0'),r.employee,r.dept,r.type,`"${r.travelDest}"`,`"${r.travelPurpose}"`,r.travelCost||0,r.from,r.to,r.travelSupApproval||'Pending',r.travelHRApproval||'Pending']);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`LeaveTrack_Travel_${TODAY}.csv`;a.click();
-  toast(reqs.length?'Travel CSV exported ✓':'No travel records to export.','purple');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Travel_${TODAY}.csv`;
+  a.click();
+  toast(travelReqs.length?
+    'Travel CSV exported ✓':'No travel requests available for export.','purple');
 }
 
 // ── EMPLOYEE VIEWS ────────────────────────────────────────────────────────
 function renderEmpDash(){
-  const b=state.balances[state.user.name]||{vacation:0,vacUsed:0,sick:0,sickUsed:0,inLieu:0,inLieuUsed:0,dept:0,deptUsed:0};
+  const b=state.balances[state.user.name]||{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0};
   const myReqs=state.requests.filter(r=>r.employee===state.user.name);
   const pending=myReqs.filter(r=>r.status==='pending').length;
   const travelCount=myReqs.filter(r=>r.travel).length;
   return `
   <div class="page-title">Welcome back, ${state.user.name.split(' ')[0]} 👋</div>
-  <div class="page-sub">Your leave & travel summary for ${new Date().getFullYear()}.</div>
+  <div class="page-sub">Your leave & travel summary for 2026.</div>
   <div class="page-actions">
     <button class="btn btn-print" onclick="printPage()">🖨 Print Summary</button>
     <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
@@ -689,28 +632,18 @@ function renderEmpDash(){
 }
 
 function renderRequestForm(){
-  // Build supervisor list dynamically from workers in Supabase
-  const supers=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr')&&w.active);
-  const myWorker=state.workers.find(w=>w.username===state.user.username);
-  const mySup=myWorker?.supervisor||'';
-  const supOptions=supers.length>0
-    ?supers.map(s=>`<option value="${s.name}"${s.name===mySup?' selected':''}>${s.name} (${s.dept})</option>`).join('')
-    :`<option>No supervisors found</option>`;
-
-  const deptVal=state.workers.find(w=>w.username===state.user.username)?.dept||DEPARTMENTS[0];
-
   return `
   <div class="page-title">Submit Leave Request</div>
   <div class="page-sub">Fill in the details below. Your supervisor will be notified immediately.</div>
   <div class="card" style="max-width:720px">
     <div class="form-grid">
       <div class="form-group"><label>Leave Type</label><select id="fType">${LEAVE_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
-      <div class="form-group"><label>Department</label><select id="fDept">${DEPARTMENTS.map(d=>`<option${d===deptVal?' selected':''}>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Department</label><select id="fDept">${DEPARTMENTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
       <div class="form-group"><label>From Date</label><input type="date" id="fFrom" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>To Date</label><input type="date" id="fTo" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>Working Days</label><input type="number" id="fDays" value="1" min="1" style="background:#F9FAFB"></div>
-      <div class="form-group"><label>Reporting Supervisor</label><select id="fSup">${supOptions}</select></div>
-      <div class="form-group full"><label>Reason / Notes</label><textarea id="fReason" placeholder="Briefly describe the reason for your leave…"></textarea></div>
+      <div class="form-group"><label>Reporting Supervisor</label><select id="fSup"><option>David Chen</option><option>Maria Santos</option><option>Linda Brown</option></select></div>
+      <div class="form-group full"><label>Reason / Notes</label><textarea id="fReason" placeholder="Briefly describe the reason for your leave..."></textarea></div>
     </div>
     <div class="checkbox-row">
       <input type="checkbox" id="travelToggle" onchange="document.getElementById('travelSection').style.display=this.checked?'block':'none'">
@@ -723,13 +656,13 @@ function renderRequestForm(){
           <div class="form-group"><label>Destination (City, Country)</label><input type="text" id="fDest" placeholder="e.g. Bridgetown, Barbados"></div>
           <div class="form-group"><label>Estimated Cost (USD)</label><input type="number" id="fCost" placeholder="e.g. 850" min="0"></div>
           <div class="form-group full"><label>Purpose of Travel</label><input type="text" id="fPurpose" placeholder="e.g. Regional HR Conference 2026"></div>
-          <div class="form-group full"><label>Additional Notes</label><textarea id="fTravelNotes" placeholder="Accommodation, transport, special requirements…"></textarea></div>
+          <div class="form-group full"><label>Additional Notes</label><textarea id="fTravelNotes" placeholder="Accommodation, transport, special requirements..."></textarea></div>
         </div>
       </div>
     </div>
     <div class="form-actions">
       <button class="btn" onclick="setNav('dashboard')">Cancel</button>
-      <button class="btn btn-primary" id="submit-req-btn" onclick="submitRequest()">✓ Submit Request</button>
+      <button class="btn btn-primary" onclick="submitRequest()">✓ Submit Request</button>
     </div>
   </div>`;
 }
@@ -739,54 +672,26 @@ function calcDays(){
   if(f&&t){let d=0,cur=new Date(f),end=new Date(t);while(cur<=end){if(cur.getDay()!==0&&cur.getDay()!==6)d++;cur.setDate(cur.getDate()+1);}const el=document.getElementById('fDays');if(el)el.value=Math.max(1,d);}
 }
 
-async function submitRequest(){
-  const type   =document.getElementById('fType')?.value||'Vacation';
-  const dept   =document.getElementById('fDept')?.value||'';
-  const from   =document.getElementById('fFrom')?.value||TODAY;
-  const to     =document.getElementById('fTo')?.value||TODAY;
-  const days   =parseInt(document.getElementById('fDays')?.value)||1;
-  const sup    =document.getElementById('fSup')?.value||'';
-  const reason =document.getElementById('fReason')?.value||'';
-  const travel =document.getElementById('travelToggle')?.checked||false;
-  const dest   =document.getElementById('fDest')?.value||'';
-  const purpose=document.getElementById('fPurpose')?.value||'';
-  const cost   =document.getElementById('fCost')?.value||'';
-
-  if(travel&&!dest){toast('Please enter a travel destination.','error');return;}
-
-  const btn=document.getElementById('submit-req-btn');
-  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
-  showLoading('Saving your request…');
-
-  try {
-    const now=new Date().toISOString();
-    const payload={
-      employee: state.user.name, dept, type,
-      from_date: from, to_date: to, days, reason,
-      status: 'pending', sup_by: sup,
-      sup_decision: 'Pending', sup_date: null,
-      hr_decision: 'Pending', hr_date: null,
-      travel, travel_dest: dest, travel_purpose: purpose, travel_cost: cost,
-      travel_sup_approval: travel?'Pending':'',
-      travel_hr_approval:  travel?'Pending':'',
-      submitted: now,
-    };
-
-    const {data, error}=await sb.from('leave_requests').insert(payload).select().single();
-    if(error) throw error;
-
-    state.requests.unshift(mapRequest(data));
-    addNotif(`Your ${type} request (${from}) was submitted and is awaiting supervisor review.`,'info',false);
-    renderNotifBadge(); renderNotifList();
-    sendBrowserNotif('Leave Request Submitted','Your request has been sent to '+sup+' for approval.');
-    toast(travel?'Request + Travel Authorization submitted! ✓':'Leave request submitted! ✓','success');
-    setNav('history');
-  } catch(err){
-    toast('Error saving request: '+err.message,'error');
-  } finally {
-    hideLoading();
-    if(btn){btn.disabled=false;btn.textContent='✓ Submit Request';}
-  }
+function submitRequest(){
+  const type=document.getElementById('fType')?.value||'Vacation';
+  const dept=document.getElementById('fDept')?.value||'Information Technology';
+  const from=document.getElementById('fFrom')?.value||TODAY;
+  const to=document.getElementById('fTo')?.value||TODAY;
+  const days=parseInt(document.getElementById('fDays')?.value)||1;
+  const sup=document.getElementById('fSup')?.value||'David Chen';
+  const reason=document.getElementById('fReason')?.value||'';
+  const travel=document.getElementById('travelToggle')?.checked||false;
+  const travelDest=document.getElementById('fDest')?.value||'';
+  const travelPurpose=document.getElementById('fPurpose')?.value||'';
+  const travelCost=document.getElementById('fCost')?.value||'';
+  if(travel&&!travelDest){toast('Please enter a travel destination.','error');return;}
+  state.requests.unshift({id:state.nextId++,employee:state.user.name,dept,type,from,to,days,reason,status:'pending',supBy:sup,supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel,travelDest,travelPurpose,travelCost,travelSupApproval:travel?'Pending':'',travelHRApproval:travel?'Pending':'',submitted:new Date().toISOString().slice(0,16)});
+  addNotif(`Your ${type} request (${from}) was submitted and is awaiting supervisor review.`,'info',false);
+  addNotif(`${state.user.name} submitted a new ${type} request (${from} to ${to}, ${days} days)`, 'pending', false);
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Leave Request Submitted','Your request has been sent to '+sup+' for approval.');
+  toast(travel?'Request + Travel Authorization submitted! ✓':'Leave request submitted! ✓','success');
+  setNav('history');
 }
 
 function renderMyHistory(){
@@ -842,20 +747,18 @@ function renderMyTravel(){
 }
 
 function renderCalendar(){
-  const now=new Date();
-  const y=now.getFullYear(), m=now.getMonth();
+  const y=2026,m=4;
   const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const first=new Date(y,m,1).getDay(), total=new Date(y,m+1,0).getDate();
-  const pad=n=>String(n).padStart(2,'0');
+  const first=new Date(y,m,1).getDay(),total=new Date(y,m+1,0).getDate();
   const myReqs=state.requests.filter(r=>r.employee===state.user.name&&r.status==='approved');
-  function getType(d){const ds=`${y}-${pad(m+1)}-${pad(d)}`;for(const r of myReqs){if(ds>=r.from&&ds<=r.to)return r.type;}return null;}
+  function getType(d){const ds=`2026-05-${String(d).padStart(2,'0')}`;for(const r of myReqs){if(ds>=r.from&&ds<=r.to)return r.type;}return null;}
   let cells='';
   for(let i=0;i<first;i++)cells+=`<div class="cal-day cal-empty"></div>`;
   for(let d=1;d<=total;d++){const lt=getType(d);const cls=lt==='Sick Leave'?'cal-sick':lt==='Vacation'?'cal-leave':lt?'cal-other':'cal-day';cells+=`<div class="${cls}" title="${lt||''}">${d}</div>`;}
   return `
   <div class="page-title">Leave Calendar</div>
-  <div class="page-sub">Approved leave days for ${monthNames[m]} ${y}.</div>
+  <div class="page-sub">Approved leave days for May 2026.</div>
   <div class="page-actions"><button class="btn btn-print" onclick="printPage()">🖨 Print Calendar</button></div>
   <div class="card" style="max-width:500px">
     <div class="card-title" style="font-size:15px">${monthNames[m]} ${y}</div>
@@ -871,7 +774,7 @@ function renderCalendar(){
 // ── SUPERVISOR / HR VIEWS ─────────────────────────────────────────────────
 function renderPending(role){
   const pending=role==='supervisor'
-    ?state.requests.filter(r=>r.supDecision==='Pending')
+    ?state.requests.filter(r=>r.supDecision==='Pending'&&r.supBy===state.user.name)
     :state.requests.filter(r=>r.hrDecision==='Pending');
   return `
   <div class="page-title">${role==='supervisor'?'Leave Approvals — Supervisor':'Leave Approvals — HR'}</div>
@@ -903,7 +806,7 @@ function renderPending(role){
 }
 
 function renderTravelPending(role){
-  const travelPending=state.requests.filter(r=>r.travel&&(role==='supervisor'?r.travelSupApproval==='Pending':r.travelSupApproval==='Approved'&&r.travelHRApproval==='Pending'));
+  const travelPending=state.requests.filter(r=>r.travel&&(role==='supervisor'?r.travelSupApproval==='Pending'&&r.supBy===state.user.name:r.travelSupApproval==='Approved'&&r.travelHRApproval==='Pending'));
   return `
   <div class="page-title">✈ Travel Approvals — ${role==='supervisor'?'Supervisor':'HR'}</div>
   <div class="page-sub">Approve or reject travel linked to leave requests. Reviewed separately from leave.</div>
@@ -915,7 +818,7 @@ function renderTravelPending(role){
   travelPending.map(r=>`
   <div class="approve-card" style="border:1.5px solid #C4B5FD">
     <div class="approve-card-header">
-      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta">${r.employee} · ${r.dept} · LR-${String(r.id).padStart(3,'0')} (${r.type})</div></div>
+      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta">${r.employee} · ${r.dept} · LR-${String(r.id).padStart(3,'0')} (${r.type}) · Submitted ${fmtSubmitted(r.submitted)}</div></div>
       ${r.travelCost?`<div style="font-size:18px;font-weight:700;color:var(--dpurple)">$${parseInt(r.travelCost).toLocaleString()}</div>`:''}
     </div>
     <div class="approve-details">
@@ -932,52 +835,40 @@ function renderTravelPending(role){
   </div>`).join('')}`;
 }
 
-async function decide(id, role, action){
-  const req=state.requests.find(r=>r.id===id); if(!req)return;
+function decide(id,role,action){
+  const req=state.requests.find(r=>r.id===id);if(!req)return;
   const d=action==='approve'?'Approved':'Rejected';
-  showLoading('Saving decision…');
-  try {
-    const updates={};
-    if(role==='supervisor'){ updates.sup_decision=d; updates.sup_date=TODAY; if(d==='Rejected')updates.status='rejected'; }
-    else { updates.hr_decision=d; updates.hr_date=TODAY; updates.status=d==='Approved'?'approved':'rejected'; }
-    const {error}=await sb.from('leave_requests').update(updates).eq('id',id);
-    if(error) throw error;
-
-    // update state
-    if(role==='supervisor'){ req.supDecision=d; req.supDate=TODAY; if(d==='Rejected')req.status='rejected'; }
-    else { req.hrDecision=d; req.hrDate=TODAY; req.status=d==='Approved'?'approved':'rejected'; }
-
-    addNotif(`${req.employee}'s ${req.type} request was ${role==='supervisor'?'supervisor-approved — now pending HR':'fully approved ✓'}`,'success',false);
-    renderNotifBadge(); renderNotifList();
-    sendBrowserNotif('Leave '+d, req.employee+' — '+req.type+' ('+req.from+')');
-    toast(`${d} for ${req.employee}`,'success');
-    renderAll();
-  } catch(err){
-    toast('Error: '+err.message,'error');
-  } finally { hideLoading(); }
+  if(role==='supervisor'){req.supDecision=d;req.supDate=TODAY;if(d==='Rejected')req.status='rejected';}
+  else{req.hrDecision=d;req.hrDate=TODAY;req.status=d==='Approved'?'approved':'rejected';}
+  const notifText=d==='Approved'
+    ?`${req.employee}'s ${req.type} request was ${role==='supervisor'?'supervisor-approved — now pending HR':'fully approved ✓'}`
+    :`${req.employee}'s ${req.type} request was rejected.`;
+  addNotif(notifText,d==='Approved'?'success':'error',false);
+  if (d === 'Approved') {
+    addNotif(`Your ${req.type} request (${req.from}) was ${role === 'supervisor' ? 'approved by supervisor' : 'fully approved by HR'} ✓`, 'success', false);
+  }
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Leave '+d,req.employee+' — '+req.type+' ('+req.from+')');
+  toast(`${d} for ${req.employee}`,'success');
+  renderAll();
 }
 
-async function decideTravel(id, role, action){
-  const req=state.requests.find(r=>r.id===id); if(!req)return;
+function decideTravel(id,role,action){
+  const req=state.requests.find(r=>r.id===id);if(!req)return;
   const d=action==='approve'?'Approved':'Rejected';
-  showLoading('Saving travel decision…');
-  try {
-    const updates=role==='supervisor'?{travel_sup_approval:d}:{travel_hr_approval:d};
-    const {error}=await sb.from('leave_requests').update(updates).eq('id',id);
-    if(error) throw error;
-    if(role==='supervisor') req.travelSupApproval=d; else req.travelHRApproval=d;
-    addNotif(`Travel to ${req.travelDest} for ${req.employee} was ${d.toLowerCase()}.`,d==='Approved'?'success':'error',false);
-    renderNotifBadge(); renderNotifList();
-    toast(`Travel ${d.toLowerCase()} for ${req.employee} ✈`,action==='approve'?'purple':'error');
-    renderAll();
-  } catch(err){
-    toast('Error: '+err.message,'error');
-  } finally { hideLoading(); }
+  if(role==='supervisor')req.travelSupApproval=d;
+  else req.travelHRApproval=d;
+  addNotif(`Travel to ${req.travelDest} for ${req.employee} was ${d.toLowerCase()} by ${role==='supervisor'?'supervisor':'HR'}.`,d==='Approved'?'success':'error',false);
+  renderNotifBadge();renderNotifList();
+  sendBrowserNotif('Travel '+d,req.employee+' — '+req.travelDest);
+  toast(`Travel ${d.toLowerCase()} for ${req.employee} ✈`,action==='approve'?'purple':'error');
+  renderAll();
 }
 
 function renderTeam(){
   const empMap={};
-  state.requests.forEach(r=>{
+  const visibleReqs=state.user.role==='supervisor'?state.requests.filter(r=>r.supBy===state.user.name):state.requests;
+  visibleReqs.forEach(r=>{
     if(!empMap[r.employee])empMap[r.employee]={name:r.employee,dept:r.dept,byType:{},pending:0,travel:0};
     if(r.status==='approved'){empMap[r.employee].byType[r.type]=(empMap[r.employee].byType[r.type]||0)+r.days;}
     else if(r.status==='pending')empMap[r.employee].pending++;
@@ -1003,6 +894,7 @@ function renderTeam(){
 }
 
 function renderAllRequests(){
+  const visibleReqs=state.user.role==='hr'?state.requests:state.requests.filter(r=>r.supBy===state.user.name);
   return `
   <div class="page-title">All Leave Requests</div>
   <div class="page-sub">Complete record of all employee requests.</div>
@@ -1012,7 +904,7 @@ function renderAllRequests(){
   </div>
   <div class="card"><div class="table-wrap"><table>
     <thead><tr><th>ID</th><th>Employee</th><th>Dept</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Sup ✓</th><th>HR ✓</th><th>Status</th><th>Submitted</th></tr></thead>
-    <tbody>${state.requests.map(r=>`<tr>
+    <tbody>${visibleReqs.map(r=>`<tr>
       <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
       <td style="font-weight:600">${r.employee}</td><td style="color:var(--muted)">${r.dept}</td>
       <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
@@ -1037,7 +929,7 @@ function renderReports(){
   const typeColors={'Vacation':'#1D9E75','Sick Leave':'#E24B4A','In Lieu Of':'#BA7517','Maternity':'#EC4899','Paternal':'#10B981','Bereavement':'#6B7280','Departmental':'#5B21B6','Other':'#94A3B8'};
   return `
   <div class="page-title">Leave & Travel Reports</div>
-  <div class="page-sub">Aggregated statistics for ${new Date().getFullYear()}.</div>
+  <div class="page-sub">Aggregated statistics for 2026.</div>
   <div class="page-actions">
     <button class="btn btn-print" onclick="printPage()">🖨 Print Report</button>
     <button class="btn btn-export" onclick="exportCSV()">⬇ Export Leaves CSV</button>
@@ -1067,7 +959,7 @@ function renderReports(){
   </div>`;
 }
 
-// ── WORKER MANAGEMENT ─────────────────────────────────────────────────────
+// ── WORKER MANAGEMENT ────────────────────────────────────────────────────
 function renderWorkers(){
   const active=state.workers.filter(w=>w.active);
   const inactive=state.workers.filter(w=>!w.active);
@@ -1084,12 +976,13 @@ function renderWorkers(){
   ${inactive.length>0?`<div style="font-size:12px;font-weight:600;color:var(--muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em">Inactive / Offboarded</div>${inactive.map(w=>workerCard(w,supervisors)).join('')}`:''}`;
 }
 
-function workerCard(w, supervisors){
+function workerCard(w,supervisors){
+  const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
   const roleLabel=w.role==='hr'?'HR Admin':w.role==='supervisor'?'Supervisor':'Employee';
   const e=w.entitlements||{};
   return `
   <div class="worker-card" style="${!w.active?'opacity:.6':''}">
-    <div class="worker-avatar${w.active?'':' inactive'}">${w.initials||'?'}</div>
+    <div class="worker-avatar${w.active?'':' inactive'}">${initials}</div>
     <div class="worker-info">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="worker-name">${w.name}</span>
@@ -1097,7 +990,7 @@ function workerCard(w, supervisors){
         <span class="badge badge-type">${roleLabel}</span>
       </div>
       <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
-      <div class="worker-meta" style="margin-top:2px">Start Date: ${w.startDate} · End Date: ${w.endDate||'Present'}</div>
+      <div class="worker-meta" style="margin-top:2px">Start Date: ${w.startDate} · End Date: ${w.endDate || 'Present'}</div>
       <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email}</div>
       <div class="worker-entitlements">
         ${[['Vacation',e.vacation],['Sick',e.sick],['In Lieu',e.inLieu],['Maternity',e.maternity],['Paternal',e.paternal],['Bereavement',e.bereavement],['Dept.',e.departmental],['Other',e.other]].filter(([,v])=>v>0).map(([k,v])=>`<span class="entitle-pill">${k}: ${v}d</span>`).join('')}
@@ -1119,7 +1012,9 @@ function renderOnboard(prefill){
   return `
   <div class="page-title">${isEdit?'Edit Worker — '+p.name:'Onboard New Worker'}</div>
   <div class="page-sub">${isEdit?'Update employee profile, supervisor assignment and leave entitlements.':'Create a new employee account with login credentials and leave entitlements.'}</div>
+
   <div class="card" style="max-width:780px">
+    <!-- Personal Info -->
     <div class="onboard-section">
       <div class="onboard-section-title">👤 Personal Information</div>
       <div class="form-grid">
@@ -1128,13 +1023,18 @@ function renderOnboard(prefill){
         <div class="form-group"><label>Job Title</label><input type="text" id="ob-title" placeholder="e.g. Software Engineer" value="${p.jobTitle||''}"></div>
         <div class="form-group"><label>Email Address</label><input type="email" id="ob-email" placeholder="e.g. john.smith@company.com" value="${p.email||''}"></div>
         <div class="form-group"><label>Department</label>
-          <select id="ob-dept">${DEPARTMENTS.map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}</select>
+          <select id="ob-dept">
+            ${DEPARTMENTS.map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}
+          </select>
         </div>
         <div class="form-group"><label>Start Date</label><input type="date" id="ob-start" value="${p.startDate||TODAY}"></div>
         <div class="form-group"><label>End Date</label><input type="date" id="ob-end" value="${p.endDate||''}"></div>
-        <div class="form-group" style="grid-column:span 2"><label><input type="checkbox" id="ob-present" ${p.endDate?'':'checked'}> Currently employed / present</label></div>
+        <div class="form-group" style="grid-column: span 2;"><label><input type="checkbox" id="ob-present" ${p.endDate?'':'checked'}> Currently employed / present</label></div>
       </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Leave end date blank for employees who are still with the company.</div>
     </div>
+
+    <!-- Role & Supervisor -->
     <div class="onboard-section">
       <div class="onboard-section-title">🏷 Role & Reporting</div>
       <div class="form-grid">
@@ -1153,6 +1053,8 @@ function renderOnboard(prefill){
         </div>
       </div>
     </div>
+
+    <!-- Leave Entitlements -->
     <div class="onboard-section">
       <div class="onboard-section-title">📅 Annual Leave Entitlements (days per year)</div>
       <div class="leave-entitle-grid">
@@ -1165,244 +1067,215 @@ function renderOnboard(prefill){
         <div class="leave-entitle-item"><label>Departmental</label><input type="number" id="ob-dept-leave" value="${p.entitlements?.departmental??5}" min="0" max="60"></div>
         <div class="leave-entitle-item"><label>Other</label><input type="number" id="ob-other" value="${p.entitlements?.other??3}" min="0" max="60"></div>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:8px">Set to 0 for leave types that don't apply.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Set to 0 for leave types that don't apply to this employee.</div>
     </div>
+
+    <!-- Login Credentials -->
     <div class="onboard-section">
       <div class="onboard-section-title">🔐 Login Credentials</div>
       <div class="form-grid">
         <div class="form-group">
           <label>Username</label>
-          <input type="text" id="ob-user" placeholder="e.g. jsmith (lowercase)" value="${p.username||''}"${isEdit?' style="background:#F9FAFB" readonly':''} oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._]/g,'')">
-          ${isEdit?'<span style="font-size:11px;color:var(--muted)">Username cannot be changed.</span>':''}
+          <input type="text" id="ob-user" placeholder="e.g. jsmith (lowercase, no spaces)" value="${p.username||''}"${isEdit?' style="background:#F9FAFB" readonly':''} oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._]/g,'')">
+          ${isEdit?'<span style="font-size:11px;color:var(--muted)">Username cannot be changed after creation.</span>':''}
         </div>
         <div class="form-group">
-          <label>${isEdit?'New Password (leave blank to keep)':'Password'}</label>
-          <input type="text" id="ob-pass" placeholder="${isEdit?'Enter new password to change…':'e.g. Welcome@2026'}" value="">
+          <label>${isEdit?'New Password (leave blank to keep current)':'Password'}</label>
+          <input type="text" id="ob-pass" placeholder="${isEdit?'Enter new password to change...':'e.g. Welcome@2026'}" value="">
         </div>
       </div>
+      <div style="font-size:11px;color:var(--muted)">Share these credentials privately with the employee. They can change their password after logging in.</div>
     </div>
+
     <div id="ob-error" style="color:var(--txtred);font-size:12px;font-weight:600;margin-bottom:10px;display:none"></div>
+
     <div class="form-actions">
       <button class="btn" onclick="setNav('workers')">Cancel</button>
-      <button class="btn btn-primary" id="ob-save-btn" onclick="${isEdit?`saveWorkerEdit('${p.username}')`:'onboardWorker()'}">${isEdit?'💾 Save Changes':'✓ Create Account & Onboard'}</button>
+      <button class="btn btn-primary" onclick="${isEdit?`saveWorkerEdit('${p.username}')`:'onboardWorker()'}">${isEdit?'💾 Save Changes':'✓ Create Account & Onboard'}</button>
     </div>
   </div>`;
 }
 
-function editWorker(username){
-  const w=state.workers.find(x=>x.username===username); if(!w)return;
-  state.nav='onboard';
-  const hdr=`<div id="print-header"><h2>LeaveTrack — Edit Worker</h2><p>Generated: ${new Date().toLocaleString()}</p></div>`;
-  document.getElementById('sidebar').innerHTML=document.getElementById('sidebar').innerHTML; // keep sidebar
-  renderAll();
-  document.getElementById('content').innerHTML=hdr+renderOnboard(w);
-}
-
-async function onboardWorker(){
-  const first   =document.getElementById('ob-first')?.value.trim();
-  const last    =document.getElementById('ob-last')?.value.trim();
-  const title   =document.getElementById('ob-title')?.value.trim();
-  const email   =document.getElementById('ob-email')?.value.trim();
-  const dept    =document.getElementById('ob-dept')?.value;
-  const start   =document.getElementById('ob-start')?.value;
-  const endDate =document.getElementById('ob-end')?.value;
-  const present =document.getElementById('ob-present')?.checked;
-  const role    =document.getElementById('ob-role')?.value;
-  const sup     =document.getElementById('ob-sup')?.value;
+function onboardWorker(){
+  const first=document.getElementById('ob-first')?.value.trim();
+  const last=document.getElementById('ob-last')?.value.trim();
+  const title=document.getElementById('ob-title')?.value.trim();
+  const email=document.getElementById('ob-email')?.value.trim();
+  const dept=document.getElementById('ob-dept')?.value;
+  const start=document.getElementById('ob-start')?.value;
+  const endDate=document.getElementById('ob-end')?.value;
+  const present=document.getElementById('ob-present')?.checked;
+  const role=document.getElementById('ob-role')?.value;
+  const sup=document.getElementById('ob-sup')?.value;
   const username=document.getElementById('ob-user')?.value.trim();
   const password=document.getElementById('ob-pass')?.value;
-  const errEl   =document.getElementById('ob-error');
-  const saveBtn =document.getElementById('ob-save-btn');
+  const errEl=document.getElementById('ob-error');
 
   const errs=[];
-  if(!first||!last)  errs.push('Full name is required.');
+  if(!first||!last) errs.push('Full name is required.');
   if(!email||!email.includes('@')) errs.push('Valid email is required.');
   if(!username||username.length<3) errs.push('Username must be at least 3 characters.');
   if(!password||password.length<6) errs.push('Password must be at least 6 characters.');
+  if(USERS[username]) errs.push('Username "'+username+'" already exists. Choose another.');
   if(errs.length){errEl.textContent=errs.join(' ');errEl.style.display='block';return;}
   errEl.style.display='none';
 
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
-  showLoading('Creating account…');
+  const name=first+' '+last;
+  const initials=(first[0]+(last[0]||'')).toUpperCase();
+  const employeeEndDate=present ? '' : (endDate||'');
+  const entitlements={
+    vacation:parseInt(document.getElementById('ob-vacation')?.value)||0,
+    sick:parseInt(document.getElementById('ob-sick')?.value)||0,
+    inLieu:parseInt(document.getElementById('ob-inlieu')?.value)||0,
+    bereavement:parseInt(document.getElementById('ob-bereavement')?.value)||0,
+    maternity:parseInt(document.getElementById('ob-maternity')?.value)||0,
+    paternal:parseInt(document.getElementById('ob-paternal')?.value)||0,
+    departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
+    other:parseInt(document.getElementById('ob-other')?.value)||0,
+  };
 
-  try {
-    // Check for duplicate username in Supabase
-    const {data:existing}=await sb.from('workers').select('username').eq('username',username).maybeSingle();
-    if(existing){errEl.textContent='Username "'+username+'" already exists. Choose another.';errEl.style.display='block';return;}
+  // Add to USERS for login
+  USERS[username]={password,name,role,dept,initials};
 
-    const name=first+' '+last;
-    const initials=(first[0]+(last[0]||'')).toUpperCase();
-    const employeeEndDate=present?null:(endDate||null);
-    const entitlements={
-      vacation:   parseInt(document.getElementById('ob-vacation')?.value)||0,
-      sick:       parseInt(document.getElementById('ob-sick')?.value)||0,
-      inLieu:     parseInt(document.getElementById('ob-inlieu')?.value)||0,
-      bereavement:parseInt(document.getElementById('ob-bereavement')?.value)||0,
-      maternity:  parseInt(document.getElementById('ob-maternity')?.value)||0,
-      paternal:   parseInt(document.getElementById('ob-paternal')?.value)||0,
-      departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
-      other:      parseInt(document.getElementById('ob-other')?.value)||0,
-    };
+  // Add to workers directory
+  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,endDate:employeeEndDate,active:employeeEndDate?false:true,entitlements});
 
-    const {data:newWorker, error:wErr}=await sb.from('workers').insert({
-      username, password, name, dept, role,
-      supervisor: sup||'', email, job_title: title||'',
-      start_date: start||null, end_date: employeeEndDate,
-      active: !employeeEndDate, initials, entitlements,
-    }).select().single();
-    if(wErr) throw wErr;
+  // Seed empty balance
+  state.balances[name]={
+    vacation:entitlements.vacation,vacUsed:0,
+    sick:entitlements.sick,sickUsed:0,
+    inLieu:entitlements.inLieu,inLieuUsed:0,
+    dept:entitlements.departmental,deptUsed:0,
+  };
 
-    // Insert initial balance
-    const {error:bErr}=await sb.from('balances').insert({
-      employee_name: name,
-      vacation:    entitlements.vacation,    vac_used:    0,
-      sick:        entitlements.sick,        sick_used:   0,
-      in_lieu:     entitlements.inLieu,      in_lieu_used:0,
-      dept_days:   entitlements.departmental,dept_used:   0,
-      maternity:   entitlements.maternity,   maternity_used:0,
-      paternal:    entitlements.paternal,    paternal_used:0,
-    });
-    if(bErr) console.warn('Balance insert warning:', bErr.message);
+  // Notification
+  addNotif(`${name} has been onboarded as ${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'an Employee'} in ${dept}.`,'success',false);
+  renderNotifBadge();renderNotifList();
 
-    state.workers.push(mapWorker(newWorker));
-    state.balances[name]={vacation:entitlements.vacation,vacUsed:0,sick:entitlements.sick,sickUsed:0,inLieu:entitlements.inLieu,inLieuUsed:0,dept:entitlements.departmental,deptUsed:0,maternity:entitlements.maternity,maternityUsed:0,paternal:entitlements.paternal,paternalUsed:0};
-
-    addNotif(`${name} has been onboarded as ${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'an Employee'} in ${dept}.`,'success',false);
-    renderNotifBadge(); renderNotifList();
-
-    // Show credential confirmation
-    const c=document.getElementById('content');
-    c.innerHTML=`
-    <div id="print-header"><h2>LeaveTrack — New Worker Credentials</h2><p>Generated: ${new Date().toLocaleString()}</p></div>
-    <div class="page-title">Worker Onboarded Successfully ✓</div>
-    <div class="page-sub">Account created for ${name}. Share the credentials below privately.</div>
-    <div class="success-banner"><div class="success-icon">🎉</div>
-      <div class="success-text"><b>${name}</b> has been added as a <b>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</b> in <b>${dept}</b>.<br>Username <b>@${username}</b> is now active.</div>
+  // Show credential confirmation page
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div id="print-header"><h2>LeaveTrack — New Worker Credentials</h2><p>Generated: ${new Date().toLocaleString()}</p></div>
+  <div class="page-title">Worker Onboarded Successfully ✓</div>
+  <div class="page-sub">Account created for ${name}. Share the credentials below privately.</div>
+  <div class="success-banner">
+    <div class="success-icon">🎉</div>
+    <div class="success-text"><b>${name}</b> has been added as a <b>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</b> in the <b>${dept}</b> department.<br>Username <b>@${username}</b> is now active and can log in immediately.</div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Employee Profile</div>
+    <div class="form-grid" style="font-size:13px;margin-bottom:0">
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">FULL NAME</span>${name}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">JOB TITLE</span>${title||'—'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">DEPARTMENT</span>${dept}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">ROLE</span>${role==='hr'?'HR Admin':role==='supervisor'?'Supervisor':'Employee'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">SUPERVISOR</span>${sup||'—'}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">START DATE</span>${start}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:2px">STATUS</span>${employeeEndDate?`Ended ${employeeEndDate}`:'Present'}</div>
     </div>
-    <div class="card" style="max-width:560px">
-      <div class="card-title">Leave Entitlements</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        ${Object.entries({Vacation:entitlements.vacation,'Sick Leave':entitlements.sick,'In Lieu Of':entitlements.inLieu,Bereavement:entitlements.bereavement,Maternity:entitlements.maternity,Paternal:entitlements.paternal,Departmental:entitlements.departmental,Other:entitlements.other}).map(([k,v])=>`
-          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;text-transform:uppercase">${k}</div>
-            <div style="font-size:20px;font-weight:700;${v===0?'color:var(--muted)':'color:var(--dkgreen)'}">${v}</div>
-            <div style="font-size:10px;color:var(--muted)">days</div>
-          </div>`).join('')}
-      </div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Leave Entitlements</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${Object.entries({Vacation:entitlements.vacation,'Sick Leave':entitlements.sick,'In Lieu Of':entitlements.inLieu,Bereavement:entitlements.bereavement,Maternity:entitlements.maternity,Paternal:entitlements.paternal,Departmental:entitlements.departmental,Other:entitlements.other}).map(([k,v])=>`
+        <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;text-transform:uppercase">${k}</div>
+          <div style="font-size:20px;font-weight:700;${v===0?'color:var(--muted)':'color:var(--dkgreen)'}">${v}</div>
+          <div style="font-size:10px;color:var(--muted)">days</div>
+        </div>`).join('')}
     </div>
-    <div class="card" style="max-width:560px">
-      <div class="card-title">Login Credentials — Share Privately</div>
-      <div class="credential-box">
-        <div class="credential-box-title">🔐 Access Details</div>
-        <div class="credential-row"><span class="credential-label">Username</span><span class="credential-val">${username}</span></div>
-        <div class="credential-row"><span class="credential-label">Password</span><span class="credential-val">${password}</span></div>
-        <div class="credential-note">⚠ Share these credentials directly with the employee. Advise them to keep their password secure.</div>
-      </div>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Login Credentials — Share Privately</div>
+    <div class="credential-box">
+      <div class="credential-box-title">🔐 Access Details</div>
+      <div class="credential-row"><span class="credential-label">Username</span><span class="credential-val">${username}</span></div>
+      <div class="credential-row"><span class="credential-label">Password</span><span class="credential-val">${password}</span></div>
+      <div class="credential-row"><span class="credential-label">Login URL</span><span class="credential-val">Open index.html</span></div>
+      <div class="credential-note">⚠ Share these credentials directly with the employee. Advise them to keep their password secure. You can update their password at any time from the Workers directory.</div>
     </div>
-    <div class="page-actions" style="margin-top:4px">
-      <button class="btn btn-print" onclick="printPage()">🖨 Print Credentials</button>
-      <button class="btn btn-primary" onclick="setNav('workers')">Go to Workers Directory</button>
-      <button class="btn" onclick="setNav('onboard')">Onboard Another</button>
-    </div>`;
-
-  } catch(err){
-    errEl.textContent='Error: '+err.message; errEl.style.display='block';
-  } finally {
-    hideLoading();
-    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='✓ Create Account & Onboard';}
-  }
+  </div>
+  <div class="page-actions" style="margin-top:4px">
+    <button class="btn btn-print" onclick="printPage()">🖨 Print Credentials</button>
+    <button class="btn btn-primary" onclick="setNav('workers')">Go to Workers Directory</button>
+    <button class="btn" onclick="setNav('onboard')">Onboard Another</button>
+  </div>`;
 }
 
-async function saveWorkerEdit(username){
-  const w=state.workers.find(x=>x.username===username); if(!w)return;
-  const first  =document.getElementById('ob-first')?.value.trim();
-  const last   =document.getElementById('ob-last')?.value.trim();
+function editWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  const c=document.getElementById('content');
+  const ph=`<div id="print-header"><h2>LeaveTrack — Edit Worker</h2><p>Generated: ${new Date().toLocaleString()}</p></div>`;
+  state.nav='onboard';
+  renderAll();
+  // re-render with prefill
+  document.getElementById('content').innerHTML=ph+renderOnboard(w);
+}
+
+function saveWorkerEdit(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  const first=document.getElementById('ob-first')?.value.trim();
+  const last=document.getElementById('ob-last')?.value.trim();
   const present=document.getElementById('ob-present')?.checked;
   const endDate=document.getElementById('ob-end')?.value;
-  const errEl  =document.getElementById('ob-error');
-  const saveBtn=document.getElementById('ob-save-btn');
-
+  const errEl=document.getElementById('ob-error');
   if(!first||!last){errEl.textContent='Full name is required.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
-  showLoading('Saving changes…');
 
-  try {
-    const newName   =first+' '+last;
-    const newPass   =document.getElementById('ob-pass')?.value;
-    const initials  =(first[0]+(last[0]||'')).toUpperCase();
-    const newEndDate=present?null:(endDate||null);
-    const entitlements={
-      vacation:    parseInt(document.getElementById('ob-vacation')?.value)||0,
-      sick:        parseInt(document.getElementById('ob-sick')?.value)||0,
-      inLieu:      parseInt(document.getElementById('ob-inlieu')?.value)||0,
-      bereavement: parseInt(document.getElementById('ob-bereavement')?.value)||0,
-      maternity:   parseInt(document.getElementById('ob-maternity')?.value)||0,
-      paternal:    parseInt(document.getElementById('ob-paternal')?.value)||0,
-      departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
-      other:       parseInt(document.getElementById('ob-other')?.value)||0,
-    };
-    const updates={
-      name: newName, initials,
-      job_title:   document.getElementById('ob-title')?.value.trim()||w.jobTitle,
-      email:       document.getElementById('ob-email')?.value.trim()||w.email,
-      dept:        document.getElementById('ob-dept')?.value||w.dept,
-      start_date:  document.getElementById('ob-start')?.value||w.startDate,
-      end_date:    newEndDate,
-      active:      !newEndDate,
-      role:        document.getElementById('ob-role')?.value||w.role,
-      supervisor:  document.getElementById('ob-sup')?.value||'',
-      entitlements,
-    };
-    if(newPass&&newPass.length>=6) updates.password=newPass;
-
-    const {error}=await sb.from('workers').update(updates).eq('username',username);
-    if(error) throw error;
-
-    // Update local state
-    Object.assign(w, mapWorker({...updates, username, password: newPass||w.password, job_title: updates.job_title, start_date: updates.start_date, end_date: updates.end_date}));
-
-    addNotif(`${newName}'s profile has been updated by HR.`,'info',false);
-    renderNotifBadge(); renderNotifList();
-    toast(`${newName}'s profile updated ✓`,'success');
-    setNav('workers');
-  } catch(err){
-    errEl.textContent='Error: '+err.message; errEl.style.display='block';
-  } finally {
-    hideLoading();
-    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='💾 Save Changes';}
-  }
+  const newName=first+' '+last;
+  const newPass=document.getElementById('ob-pass')?.value;
+  w.name=newName;
+  w.jobTitle=document.getElementById('ob-title')?.value.trim()||w.jobTitle;
+  w.email=document.getElementById('ob-email')?.value.trim()||w.email;
+  w.dept=document.getElementById('ob-dept')?.value||w.dept;
+  w.startDate=document.getElementById('ob-start')?.value||w.startDate;
+  w.endDate = present ? '' : (endDate||'');
+  w.active = present || !w.endDate;
+  w.role=document.getElementById('ob-role')?.value||w.role;
+  w.supervisor=document.getElementById('ob-sup')?.value||'';
+  w.entitlements={
+    vacation:parseInt(document.getElementById('ob-vacation')?.value)||0,
+    sick:parseInt(document.getElementById('ob-sick')?.value)||0,
+    inLieu:parseInt(document.getElementById('ob-inlieu')?.value)||0,
+    bereavement:parseInt(document.getElementById('ob-bereavement')?.value)||0,
+    maternity:parseInt(document.getElementById('ob-maternity')?.value)||0,
+    paternal:parseInt(document.getElementById('ob-paternal')?.value)||0,
+    departmental:parseInt(document.getElementById('ob-dept-leave')?.value)||0,
+    other:parseInt(document.getElementById('ob-other')?.value)||0,
+  };
+  // Update USERS
+  const initials=(first[0]+(last[0]||'')).toUpperCase();
+  USERS[username]={...USERS[username],name:newName,role:w.role,dept:w.dept,initials};
+  if(newPass&&newPass.length>=6) USERS[username].password=newPass;
+  addNotif(`${newName}'s profile has been updated by HR.`,'info',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${newName}'s profile updated ✓`,'success');
+  setNav('workers');
 }
 
-async function deactivateWorker(username){
-  const w=state.workers.find(x=>x.username===username); if(!w)return;
+function deactivateWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
   if(!confirm(`Deactivate ${w.name}? They will no longer be able to log in.`))return;
-  showLoading('Deactivating…');
-  try {
-    const {error}=await sb.from('workers').update({active:false}).eq('username',username);
-    if(error) throw error;
-    w.active=false;
-    addNotif(`${w.name} has been deactivated by HR.`,'error',false);
-    renderNotifBadge(); renderNotifList();
-    toast(`${w.name} deactivated`,'info');
-    renderAll();
-  } catch(err){ toast('Error: '+err.message,'error'); }
-  finally { hideLoading(); }
+  w.active=false;
+  if(USERS[username])USERS[username].active=false;
+  addNotif(`${w.name} has been deactivated by HR.`,'error',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${w.name} deactivated`,'info');
+  renderAll();
 }
 
-async function reactivateWorker(username){
-  const w=state.workers.find(x=>x.username===username); if(!w)return;
-  showLoading('Reactivating…');
-  try {
-    const {error}=await sb.from('workers').update({active:true}).eq('username',username);
-    if(error) throw error;
-    w.active=true;
-    addNotif(`${w.name} has been reactivated by HR.`,'success',false);
-    renderNotifBadge(); renderNotifList();
-    toast(`${w.name} reactivated ✓`,'success');
-    renderAll();
-  } catch(err){ toast('Error: '+err.message,'error'); }
-  finally { hideLoading(); }
+function reactivateWorker(username){
+  const w=state.workers.find(x=>x.username===username);
+  if(!w)return;
+  w.active=true;
+  if(USERS[username])USERS[username].active=true;
+  addNotif(`${w.name} has been reactivated by HR.`,'success',false);
+  renderNotifBadge();renderNotifList();
+  toast(`${w.name} reactivated ✓`,'success');
+  renderAll();
 }
 
 function exportWorkersCSV(){
@@ -1410,9 +1283,13 @@ function exportWorkersCSV(){
   const rows=state.workers.map(w=>[w.username,`"${w.name}"`,`"${w.jobTitle||''}"`,w.dept,w.role,`"${w.supervisor||''}"`,w.email,w.startDate,w.endDate||'',w.active?'Active':'Inactive',w.entitlements?.vacation||0,w.entitlements?.sick||0,w.entitlements?.inLieu||0,w.entitlements?.maternity||0,w.entitlements?.paternal||0,w.entitlements?.bereavement||0,w.entitlements?.departmental||0,w.entitlements?.other||0]);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`LeaveTrack_Workers_${TODAY}.csv`;a.click();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Workers_${TODAY}.csv`;
+  a.click();
   toast('Workers CSV exported ✓','success');
 }
+
 
 function toast(msg,type='success'){
   const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';

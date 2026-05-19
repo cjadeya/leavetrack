@@ -171,6 +171,7 @@ tr:hover td{background:#FAFAFA}
 .badge-type{background:var(--blue);color:var(--txtblue)}
 .badge-travel{background:var(--ltpurple);color:var(--dpurple)}
 .badge-awaiting{background:#F3F4F6;color:#6B7280}
+.badge-cancelled{background:#F3F4F6;color:#374151;text-decoration:line-through}
 
 /* ── APPROVAL CARD ── */
 .approve-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
@@ -199,6 +200,9 @@ tr:hover td{background:#FAFAFA}
 .cal-sick{background:var(--red);color:var(--txtred);font-weight:600}
 .cal-other{background:var(--amber);color:var(--txtamber);font-weight:600}
 .cal-empty{opacity:0;pointer-events:none}
+.cal-holiday{background:var(--ltpurple);color:var(--dpurple);font-weight:600}
+.cal-today{outline:2px solid var(--dkgreen);outline-offset:-2px;font-weight:700}
+.cal-lbl{font-size:9px;line-height:1.1;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── MISC ── */
 .note{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px;margin-top:10px;border-left:3px solid var(--green)}
@@ -212,6 +216,38 @@ tr:hover td{background:#FAFAFA}
 #toast.purple{background:var(--dpurple)}
 #toast.info{background:#1A2233}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── LEAVE PROFILE ── */
+.profile-header{display:flex;align-items:flex-start;gap:18px}
+.profile-avatar-lg{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.profile-meta-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:8px}
+.profile-balance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.profile-balance-item{background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--border)}
+.profile-balance-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+.profile-balance-nums{display:flex;align-items:baseline;gap:4px;margin-bottom:4px}
+.team-summary-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.team-summary-card:last-child{border-bottom:none}
+.team-mini-stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+.mini-stat{font-size:11px;color:var(--muted)}
+.mini-stat b{color:var(--text)}
+.link-name{color:var(--dkgreen);cursor:pointer;font-weight:700}
+.link-name:hover{text-decoration:underline}
+
+/* ── REPORT YEAR TABS ── */
+.report-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;flex-wrap:wrap}
+.report-tab{padding:6px 20px;border-radius:7px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.report-tab:hover{background:var(--bg);color:var(--text)}
+.report-tab.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 1px 4px rgba(29,158,117,.3)}
+
+/* ── EDIT HISTORY ── */
+.edit-timeline{padding:2px 0}
+.edit-entry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.edit-entry:last-child{border-bottom:none}
+.edit-dot{width:10px;height:10px;border-radius:50%;background:var(--txtamber);flex-shrink:0;margin-top:4px}
+.edit-meta{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.edit-changes{display:flex;gap:6px;flex-wrap:wrap}
+.edit-change-pill{background:var(--amber);color:var(--txtamber);border-radius:6px;padding:3px 10px;font-size:11px;white-space:nowrap}
+.badge-edited{background:var(--amber);color:var(--txtamber)}
 
 /* ── PRINT STYLES ── */
 @media print{
@@ -392,7 +428,7 @@ function doLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('user-name').textContent=usr.name;
-  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
+  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role==='secretariat'?'Secretariat':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
   document.getElementById('user-avatar').textContent=usr.initials;
   seedNotifications();
   renderAll();
@@ -504,6 +540,10 @@ const MENUS={
     {id:'travel_pending',icon:'✈',label:'Travel Approvals'},
     {id:'team',icon:'⊞',label:'Team Overview'},
     {id:'all',icon:'◷',label:'All Requests'},
+    {id:'request',icon:'＋',label:'New Request'},
+    {id:'history',icon:'📋',label:'My Requests'},
+    {id:'travel',icon:'✈',label:'My Travel Auth.'},
+    {id:'calendar',icon:'▤',label:'Calendar'},
   ],
   hr:[
     {id:'pending',icon:'◎',label:'Leave Approvals'},
@@ -513,12 +553,29 @@ const MENUS={
     {id:'all',icon:'◷',label:'Full History'},
     {id:'workers',icon:'👥',label:'Workers'},
     {id:'onboard',icon:'＋',label:'Onboard Worker'},
+    {id:'request',icon:'＋',label:'New Request'},
+    {id:'history',icon:'📋',label:'My Requests'},
+    {id:'travel',icon:'✈',label:'My Travel Auth.'},
+    {id:'calendar',icon:'▤',label:'Calendar'},
+  ],
+  secretariat:[
+    {id:'pending',icon:'◎',label:'Leave Approvals'},
+    {id:'travel_pending',icon:'✈',label:'Travel Approvals'},
+    {id:'team',icon:'⊞',label:'All Employees'},
+    {id:'reports',icon:'▤',label:'Reports'},
+    {id:'all',icon:'◷',label:'Full History'},
+    {id:'workers',icon:'👥',label:'Workers'},
+    {id:'onboard',icon:'＋',label:'Onboard Worker'},
+    {id:'request',icon:'＋',label:'New Request'},
+    {id:'history',icon:'📋',label:'My Requests'},
+    {id:'travel',icon:'✈',label:'My Travel Auth.'},
+    {id:'calendar',icon:'▤',label:'Calendar'},
   ]
 };
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
 function badge(status){
-  const cls=status==='Approved'||status==='approved'?'badge-approved':status==='Rejected'||status==='rejected'?'badge-rejected':status==='Pending'||status==='pending'?'badge-pending':'badge-awaiting';
+  const cls=status==='Approved'||status==='approved'?'badge-approved':status==='Rejected'||status==='rejected'?'badge-rejected':status==='Pending'||status==='pending'?'badge-pending':status==='cancelled'?'badge-cancelled':'badge-awaiting';
   return `<span class="badge ${cls}">${status?status.charAt(0).toUpperCase()+status.slice(1):'Awaiting'}</span>`;
 }
 const TYPE_COLORS={'Vacation':'background:#DBEAFE;color:#1E40AF','Sick Leave':'background:#FCE7F3;color:#9D174D','In Lieu Of':'background:#FEF9C3;color:#713F12','Maternity':'background:#FCE7F3;color:#9D174D','Paternal':'background:#DCFCE7;color:#14532D','Bereavement':'background:#F3F4F6;color:#374151','Departmental':'background:#EDE9FE;color:#5B21B6','Other':'background:#F5F5F5;color:#374151'};
@@ -538,9 +595,10 @@ function renderAll(){
   const c=document.getElementById('content');
   const first=`<div id="print-header"><h2>LeaveTrack — Leave Management Report</h2><p id="print-date">Printed: ${new Date().toLocaleString()}</p></div>`;
   const views={
-    employee:{dashboard:renderEmpDash,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar},
-    supervisor:{pending:()=>renderPending('supervisor'),travel_pending:()=>renderTravelPending('supervisor'),team:renderTeam,all:renderAllRequests},
-    hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests,workers:renderWorkers,onboard:renderOnboard}
+    employee:{dashboard:renderEmpDash,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar,editrequest:()=>renderEditRequestForm(state.editRequestId)},
+    supervisor:{pending:()=>renderPending('supervisor'),travel_pending:()=>renderTravelPending('supervisor'),team:renderTeam,all:renderAllRequests,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar,profile:()=>renderLeaveProfile(state.profileFor),editrequest:()=>renderEditRequestForm(state.editRequestId)},
+    hr:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests,workers:renderWorkers,onboard:renderOnboard,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar,profile:()=>renderLeaveProfile(state.profileFor),editrequest:()=>renderEditRequestForm(state.editRequestId),cancelrequest:()=>renderCancelRequestForm(state.cancelRequestId)},
+    secretariat:{pending:()=>renderPending('hr'),travel_pending:()=>renderTravelPending('hr'),team:renderTeam,reports:renderReports,all:renderAllRequests,workers:renderWorkers,onboard:renderOnboard,request:renderRequestForm,history:renderMyHistory,travel:renderMyTravel,calendar:renderCalendar,profile:()=>renderLeaveProfile(state.profileFor),editrequest:()=>renderEditRequestForm(state.editRequestId),cancelrequest:()=>renderCancelRequestForm(state.cancelRequestId)}
   };
   c.innerHTML=first+((views[state.user.role]||{})[state.nav]||renderEmpDash)();
 }
@@ -551,14 +609,16 @@ function printPage(){
   window.print();
 }
 
+function isHRLevel(role){return role==='hr'||role==='secretariat';}
+
 function getExportableLeaveRequests(){
-  if(state.user.role==='hr') return state.requests;
+  if(isHRLevel(state.user.role)) return state.requests;
   if(state.user.role==='supervisor') return state.requests.filter(r=>r.supBy===state.user.name);
   return state.requests.filter(r=>r.employee===state.user.name);
 }
 
 function getExportableTravelRequests(){
-  if(state.user.role==='hr') return state.requests.filter(r=>r.travel);
+  if(isHRLevel(state.user.role)) return state.requests.filter(r=>r.travel);
   if(state.user.role==='supervisor') return state.requests.filter(r=>r.travel&&r.supBy===state.user.name);
   return state.requests.filter(r=>r.travel&&r.employee===state.user.name);
 }
@@ -597,6 +657,187 @@ function exportTravelCSV(){
     'Travel CSV exported ✓':'No travel requests available for export.','purple');
 }
 
+function exportToExcel(){
+  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const sc=(v,type='String',sid='')=>{const s=sid?` ss:StyleID="${sid}"`:'';return `<Cell${s}><Data ss:Type="${type}">${esc(v==null?'':String(v))}</Data></Cell>`;};
+  const hdr=cols=>`<Row>${cols.map(c=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${esc(c)}</Data></Cell>`).join('')}</Row>`;
+  const ss=s=>s==='approved'?'xapp':s==='pending'?'xpnd':s==='rejected'?'xrej':s==='cancelled'?'xcan':'';
+
+  const styles=`<Styles>
+    <Style ss:ID="hdr"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"/><Interior ss:Color="#1D9E75" ss:Pattern="Solid"/><Alignment ss:Horizontal="Left" ss:WrapText="0"/></Style>
+    <Style ss:ID="title"><Font ss:Bold="1" ss:Size="14" ss:Color="#0F6E56"/></Style>
+    <Style ss:ID="sub"><Font ss:Italic="1" ss:Color="#6B7280"/></Style>
+    <Style ss:ID="bold"><Font ss:Bold="1"/></Style>
+    <Style ss:ID="shdr"><Font ss:Bold="1" ss:Size="10"/><Interior ss:Color="#E5E7EB" ss:Pattern="Solid"/></Style>
+    <Style ss:ID="xapp"><Interior ss:Color="#D1FAE5" ss:Pattern="Solid"/></Style>
+    <Style ss:ID="xpnd"><Interior ss:Color="#FEF9C3" ss:Pattern="Solid"/></Style>
+    <Style ss:ID="xrej"><Interior ss:Color="#FEE2E2" ss:Pattern="Solid"/></Style>
+    <Style ss:ID="xcan"><Interior ss:Color="#F3F4F6" ss:Pattern="Solid"/><Font ss:Color="#6B7280"/></Style>
+    <Style ss:ID="num"><Alignment ss:Horizontal="Center"/></Style>
+    <Style ss:ID="numapp"><Alignment ss:Horizontal="Center"/><Interior ss:Color="#D1FAE5" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0F6E56"/></Style>
+    <Style ss:ID="numwrn"><Alignment ss:Horizontal="Center"/><Interior ss:Color="#FEF9C3" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#854F0B"/></Style>
+    <Style ss:ID="numred"><Alignment ss:Horizontal="Center"/><Interior ss:Color="#FEE2E2" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#A32D2D"/></Style>
+  </Styles>`;
+
+  // ── Sheet 1: Summary ──────────────────────────────────────────────────
+  const totalReqs=state.requests.length;
+  const appReqs=state.requests.filter(r=>r.status==='approved').length;
+  const pndReqs=state.requests.filter(r=>r.status==='pending').length;
+  const rejReqs=state.requests.filter(r=>r.status==='rejected').length;
+  const canReqs=state.requests.filter(r=>r.status==='cancelled').length;
+  const trvReqs=state.requests.filter(r=>r.travel).length;
+  const trvCost=state.requests.filter(r=>r.travel).reduce((s,r)=>s+parseInt(r.travelCost||0),0);
+
+  const summarySheet=`<Worksheet ss:Name="Summary"><Table ss:DefaultColumnWidth="160">
+    <Column ss:Width="220"/><Column ss:Width="120"/>
+    <Row><Cell ss:StyleID="title" ss:MergeAcross="1"><Data ss:Type="String">LeaveTrack — Full Data Export</Data></Cell></Row>
+    <Row><Cell ss:StyleID="sub"><Data ss:Type="String">Generated: ${new Date().toLocaleString()}</Data></Cell></Row>
+    <Row/>
+    ${hdr(['Metric','Value'])}
+    <Row>${sc('Total Leave Requests')}${sc(totalReqs,'Number','num')}</Row>
+    <Row>${sc('Approved')}${sc(appReqs,'Number','numapp')}</Row>
+    <Row>${sc('Pending')}${sc(pndReqs,'Number','numwrn')}</Row>
+    <Row>${sc('Rejected')}${sc(rejReqs,'Number','numred')}</Row>
+    <Row>${sc('Cancelled')}${sc(canReqs,'Number','num')}</Row>
+    <Row>${sc('Travel Requests')}${sc(trvReqs,'Number','num')}</Row>
+    <Row>${sc('Est. Travel Cost (USD)')}${sc('$'+trvCost.toLocaleString())}</Row>
+    <Row/>
+    <Row><Cell ss:StyleID="shdr" ss:MergeAcross="1"><Data ss:Type="String">APPROVED DAYS BY LEAVE TYPE</Data></Cell></Row>
+    ${LEAVE_TYPES.map(t=>{const days=state.requests.filter(r=>r.status==='approved'&&r.type===t).reduce((s,r)=>s+r.days,0);return`<Row>${sc(t)}${sc(days,'Number','num')}</Row>`;}).join('')}
+    <Row/>
+    <Row><Cell ss:StyleID="shdr" ss:MergeAcross="1"><Data ss:Type="String">WORKFORCE</Data></Cell></Row>
+    <Row>${sc('Active Employees')}${sc(state.workers.filter(w=>w.active&&w.role==='employee').length,'Number','num')}</Row>
+    <Row>${sc('Supervisors')}${sc(state.workers.filter(w=>w.active&&w.role==='supervisor').length,'Number','num')}</Row>
+    <Row>${sc('HR Admins')}${sc(state.workers.filter(w=>w.active&&w.role==='hr').length,'Number','num')}</Row>
+    <Row>${sc('Secretariat')}${sc(state.workers.filter(w=>w.active&&w.role==='secretariat').length,'Number','num')}</Row>
+  </Table></Worksheet>`;
+
+  // ── Sheet 2: Leave Requests ───────────────────────────────────────────
+  const leaveSheet=`<Worksheet ss:Name="Leave Requests"><Table>
+    <Column ss:Width="65"/><Column ss:Width="140"/><Column ss:Width="175"/><Column ss:Width="110"/>
+    <Column ss:Width="85"/><Column ss:Width="85"/><Column ss:Width="50"/><Column ss:Width="90"/>
+    <Column ss:Width="140"/><Column ss:Width="95"/><Column ss:Width="85"/>
+    <Column ss:Width="95"/><Column ss:Width="85"/>
+    <Column ss:Width="55"/><Column ss:Width="170"/><Column ss:Width="210"/>
+    <Column ss:Width="85"/><Column ss:Width="90"/><Column ss:Width="200"/>
+    <Column ss:Width="240"/><Column ss:Width="130"/><Column ss:Width="120"/>
+    <Column ss:Width="130"/><Column ss:Width="50"/><Column ss:Width="120"/>
+    ${hdr(['ID','Employee','Department','Leave Type','From','To','Days','Status','Supervisor','Sup. Decision','Sup. Date','HR Decision','HR Date','Travel','Destination','Purpose','Est. Cost','Insurance','Insurance Provider','Cancellation Reason','Cancelled By','Cancelled At','Submitted','Edits','Last Edited'])}
+    ${state.requests.map(r=>{const ed=r.edits||[];const sta=r.status.charAt(0).toUpperCase()+r.status.slice(1);return`<Row>
+      ${sc('LR-'+String(r.id).padStart(3,'0'))}
+      ${sc(r.employee,'String','bold')}
+      ${sc(r.dept)}${sc(r.type)}${sc(r.from)}${sc(r.to)}${sc(r.days,'Number','num')}
+      ${sc(sta,'String',ss(r.status))}
+      ${sc(r.supBy||'')}${sc(r.supDecision||'Pending')}${sc(r.supDate||'')}
+      ${sc(r.hrDecision||'Pending')}${sc(r.hrDate||'')}
+      ${sc(r.travel?'Yes':'No')}${sc(r.travelDest||'')}${sc(r.travelPurpose||'')}
+      ${sc(r.travelCost||'')}${sc(r.travelInsurance?'Yes':'No')}${sc(r.travelInsuranceProvider||'')}
+      ${sc(r.cancellationReason||'')}${sc(r.cancelledBy||'')}${sc(r.cancelledAt||'')}
+      ${sc(r.submitted||'')}${sc(ed.length,'Number','num')}${sc(ed.length>0?ed[ed.length-1].timestamp:'')}
+    </Row>`;}).join('')}
+  </Table></Worksheet>`;
+
+  // ── Sheet 3: Travel Authorizations ────────────────────────────────────
+  const trvList=state.requests.filter(r=>r.travel);
+  const travelSheet=`<Worksheet ss:Name="Travel Authorizations"><Table>
+    <Column ss:Width="65"/><Column ss:Width="140"/><Column ss:Width="175"/><Column ss:Width="110"/>
+    <Column ss:Width="180"/><Column ss:Width="220"/><Column ss:Width="90"/>
+    <Column ss:Width="75"/><Column ss:Width="200"/>
+    <Column ss:Width="85"/><Column ss:Width="85"/><Column ss:Width="50"/>
+    <Column ss:Width="120"/><Column ss:Width="120"/><Column ss:Width="90"/>
+    ${hdr(['Leave Ref','Employee','Department','Leave Type','Destination','Purpose','Est. Cost (USD)','Insurance','Insurance Provider','From','To','Days','Sup. Travel','HR Travel','Status'])}
+    ${trvList.length===0?'<Row><Cell><Data ss:Type="String">No travel requests found.</Data></Cell></Row>':
+    trvList.map(r=>`<Row>
+      ${sc('LR-'+String(r.id).padStart(3,'0'))}
+      ${sc(r.employee,'String','bold')}${sc(r.dept)}${sc(r.type)}
+      ${sc(r.travelDest||'')}${sc(r.travelPurpose||'')}${sc(r.travelCost||'')}
+      ${sc(r.travelInsurance?'Yes':'No')}${sc(r.travelInsuranceProvider||'')}
+      ${sc(r.from)}${sc(r.to)}${sc(r.days,'Number','num')}
+      ${sc(r.travelSupApproval||'Pending','String',ss(r.travelSupApproval?.toLowerCase()||'pending'))}
+      ${sc(r.travelHRApproval||'Pending','String',ss(r.travelHRApproval?.toLowerCase()||'pending'))}
+      ${sc(r.status.charAt(0).toUpperCase()+r.status.slice(1),'String',ss(r.status))}
+    </Row>`).join('')}
+  </Table></Worksheet>`;
+
+  // ── Sheet 4: Workers Directory ────────────────────────────────────────
+  const workersSheet=`<Worksheet ss:Name="Workers Directory"><Table>
+    <Column ss:Width="100"/><Column ss:Width="150"/><Column ss:Width="190"/><Column ss:Width="170"/>
+    <Column ss:Width="100"/><Column ss:Width="75"/><Column ss:Width="210"/><Column ss:Width="145"/>
+    <Column ss:Width="90"/><Column ss:Width="90"/><Column ss:Width="75"/>
+    <Column ss:Width="65"/><Column ss:Width="55"/><Column ss:Width="65"/>
+    <Column ss:Width="75"/><Column ss:Width="65"/><Column ss:Width="90"/><Column ss:Width="90"/><Column ss:Width="65"/>
+    ${hdr(['Username','Full Name','Job Title','Department','Role','Gender','Email','Reporting Supervisor','Start Date','End Date','Status','Vacation','Sick','In Lieu','Maternity','Paternal','Bereavement','Departmental','Other'])}
+    ${state.workers.map(w=>{
+      const e=w.entitlements||{};
+      const rl=w.role==='hr'?'HR Admin':w.role==='secretariat'?'Secretariat':w.role==='supervisor'?'Supervisor':'Employee';
+      return`<Row>
+        ${sc(w.username)}${sc(w.name,'String','bold')}${sc(w.jobTitle||'')}${sc(w.dept||'')}
+        ${sc(rl)}${sc(w.gender||'')}${sc(w.email||'')}${sc(w.supervisor||'')}
+        ${sc(w.startDate||'')}${sc(w.endDate||'Present')}
+        ${sc(w.active?'Active':'Inactive','String',w.active?'xapp':'xcan')}
+        ${sc(e.vacation||0,'Number','num')}${sc(e.sick||0,'Number','num')}${sc(e.inLieu||0,'Number','num')}
+        ${sc(e.maternity||0,'Number','num')}${sc(e.paternal||0,'Number','num')}
+        ${sc(e.bereavement||0,'Number','num')}${sc(e.departmental||0,'Number','num')}${sc(e.other||0,'Number','num')}
+      </Row>`;}).join('')}
+  </Table></Worksheet>`;
+
+  // ── Sheet 5: Leave Balances ───────────────────────────────────────────
+  const balSheet=`<Worksheet ss:Name="Leave Balances"><Table>
+    <Column ss:Width="155"/>
+    <Column ss:Width="90"/><Column ss:Width="80"/><Column ss:Width="90"/>
+    <Column ss:Width="80"/><Column ss:Width="70"/><Column ss:Width="80"/>
+    <Column ss:Width="80"/><Column ss:Width="70"/><Column ss:Width="80"/>
+    <Column ss:Width="90"/><Column ss:Width="80"/><Column ss:Width="90"/>
+    ${hdr(['Employee','Vac. Total','Vac. Used','Vac. Remaining','Sick Total','Sick Used','Sick Remaining','In Lieu Total','In Lieu Used','In Lieu Remaining','Dept. Total','Dept. Used','Dept. Remaining'])}
+    ${state.workers.filter(w=>w.active).map(w=>{
+      const b=state.balances[w.name]||{};const e=w.entitlements||{};
+      const vT=e.vacation||b.vacation||0,vU=b.vacUsed||0,vR=vT-vU;
+      const sT=e.sick||b.sick||0,sU=b.sickUsed||0,sR=sT-sU;
+      const iT=e.inLieu||b.inLieu||0,iU=b.inLieuUsed||0,iR=iT-iU;
+      const dT=e.departmental||b.dept||0,dU=b.deptUsed||0,dR=dT-dU;
+      const remStyle=rem=>rem<=0?'numred':rem<=3?'numwrn':'numapp';
+      return`<Row>
+        ${sc(w.name,'String','bold')}
+        ${sc(vT,'Number','num')}${sc(vU,'Number','num')}${sc(vR,'Number',remStyle(vR))}
+        ${sc(sT,'Number','num')}${sc(sU,'Number','num')}${sc(sR,'Number',remStyle(sR))}
+        ${sc(iT,'Number','num')}${sc(iU,'Number','num')}${sc(iR,'Number','num')}
+        ${sc(dT,'Number','num')}${sc(dU,'Number','num')}${sc(dR,'Number','num')}
+      </Row>`;}).join('')}
+  </Table></Worksheet>`;
+
+  // ── Sheet 6: Edit Log ─────────────────────────────────────────────────
+  const editRows=[];
+  state.requests.forEach(r=>(r.edits||[]).forEach((e,i)=>{
+    Object.entries(e.changes).forEach(([field,chg])=>{
+      editRows.push(`<Row>
+        ${sc('LR-'+String(r.id).padStart(3,'0'))}${sc(r.employee,'String','bold')}${sc(r.type)}
+        ${sc(i+1,'Number','num')}${sc(e.timestamp)}${sc(e.editedBy)}
+        ${sc(field)}${sc(chg.from)}${sc(chg.to)}
+      </Row>`);
+    });
+  }));
+  const editSheet=`<Worksheet ss:Name="Edit Log"><Table>
+    <Column ss:Width="65"/><Column ss:Width="140"/><Column ss:Width="110"/>
+    <Column ss:Width="55"/><Column ss:Width="130"/><Column ss:Width="140"/>
+    <Column ss:Width="120"/><Column ss:Width="180"/><Column ss:Width="180"/>
+    ${hdr(['Leave Ref','Employee','Leave Type','Edit #','Timestamp','Edited By','Field Changed','Previous Value','New Value'])}
+    ${editRows.length===0?'<Row><Cell><Data ss:Type="String">No edits recorded.</Data></Cell></Row>':editRows.join('')}
+  </Table></Worksheet>`;
+
+  // ── Assemble workbook ─────────────────────────────────────────────────
+  const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+${styles}
+${summarySheet}${leaveSheet}${travelSheet}${workersSheet}${balSheet}${editSheet}
+</Workbook>`;
+  const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=UTF-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`LeaveTrack_Export_${TODAY}.xls`;
+  a.click();
+  toast('Excel workbook exported — 6 sheets ✓','success');
+}
+
 // ── EMPLOYEE VIEWS ────────────────────────────────────────────────────────
 function renderEmpDash(){
   const b=state.balances[state.user.name]||{vacation:15,vacUsed:0,sick:10,sickUsed:0,inLieu:3,inLieuUsed:0,dept:5,deptUsed:0};
@@ -632,17 +873,20 @@ function renderEmpDash(){
 }
 
 function renderRequestForm(){
+  const availableSups=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr'||w.role==='secretariat')&&w.active&&w.name!==state.user.name);
+  const userWorker=state.workers.find(w=>w.username===state.user.username);
+  const userDept=userWorker?userWorker.dept:'';
   return `
   <div class="page-title">Submit Leave Request</div>
   <div class="page-sub">Fill in the details below. Your supervisor will be notified immediately.</div>
   <div class="card" style="max-width:720px">
     <div class="form-grid">
       <div class="form-group"><label>Leave Type</label><select id="fType">${LEAVE_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
-      <div class="form-group"><label>Department</label><select id="fDept">${DEPARTMENTS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Department</label><select id="fDept">${DEPARTMENTS.map(d=>`<option${d===userDept?' selected':''}>${d}</option>`).join('')}</select></div>
       <div class="form-group"><label>From Date</label><input type="date" id="fFrom" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>To Date</label><input type="date" id="fTo" value="${TODAY}" onchange="calcDays()"></div>
       <div class="form-group"><label>Working Days</label><input type="number" id="fDays" value="1" min="1" style="background:#F9FAFB"></div>
-      <div class="form-group"><label>Reporting Supervisor</label><select id="fSup"><option>David Chen</option><option>Maria Santos</option><option>Linda Brown</option></select></div>
+      <div class="form-group"><label>Reporting Supervisor</label><select id="fSup">${availableSups.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
       <div class="form-group full"><label>Reason / Notes</label><textarea id="fReason" placeholder="Briefly describe the reason for your leave..."></textarea></div>
     </div>
     <div class="checkbox-row">
@@ -657,11 +901,19 @@ function renderRequestForm(){
           <div class="form-group"><label>Estimated Cost (USD)</label><input type="number" id="fCost" placeholder="e.g. 850" min="0"></div>
           <div class="form-group full"><label>Purpose of Travel</label><input type="text" id="fPurpose" placeholder="e.g. Regional HR Conference 2026"></div>
           <div class="form-group full"><label>Additional Notes</label><textarea id="fTravelNotes" placeholder="Accommodation, transport, special requirements..."></textarea></div>
+          <div class="form-group full" style="display:flex;align-items:center;gap:8px;padding:6px 0">
+            <input type="checkbox" id="fTravelInsurance" onchange="document.getElementById('fInsuranceProviderWrap').style.display=this.checked?'block':'none'" style="margin:0;cursor:pointer">
+            <label for="fTravelInsurance" style="margin:0;font-weight:500;cursor:pointer">🛡 Employee has Travel Insurance</label>
+          </div>
+          <div class="form-group full" id="fInsuranceProviderWrap" style="display:none">
+            <label>Insurance Provider / Policy No.</label>
+            <input type="text" id="fInsuranceProvider" placeholder="e.g. Guardian Life — POL-2026-4892">
+          </div>
         </div>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn" onclick="setNav('dashboard')">Cancel</button>
+      <button class="btn" onclick="setNav('history')">Cancel</button>
       <button class="btn btn-primary" onclick="submitRequest()">✓ Submit Request</button>
     </div>
   </div>`;
@@ -684,8 +936,10 @@ function submitRequest(){
   const travelDest=document.getElementById('fDest')?.value||'';
   const travelPurpose=document.getElementById('fPurpose')?.value||'';
   const travelCost=document.getElementById('fCost')?.value||'';
+  const travelInsurance=document.getElementById('fTravelInsurance')?.checked||false;
+  const travelInsuranceProvider=document.getElementById('fInsuranceProvider')?.value.trim()||'';
   if(travel&&!travelDest){toast('Please enter a travel destination.','error');return;}
-  state.requests.unshift({id:state.nextId++,employee:state.user.name,dept,type,from,to,days,reason,status:'pending',supBy:sup,supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel,travelDest,travelPurpose,travelCost,travelSupApproval:travel?'Pending':'',travelHRApproval:travel?'Pending':'',submitted:new Date().toISOString().slice(0,16)});
+  state.requests.unshift({id:state.nextId++,employee:state.user.name,dept,type,from,to,days,reason,status:'pending',supBy:sup,supDecision:'Pending',supDate:'',hrDecision:'Pending',hrDate:'',travel,travelDest,travelPurpose,travelCost,travelInsurance,travelInsuranceProvider,travelSupApproval:travel?'Pending':'',travelHRApproval:travel?'Pending':'',submitted:new Date().toISOString().slice(0,16),edits:[]});
   addNotif(`Your ${type} request (${from}) was submitted and is awaiting supervisor review.`,'info',false);
   addNotif(`${state.user.name} submitted a new ${type} request (${from} to ${to}, ${days} days)`, 'pending', false);
   renderNotifBadge();renderNotifList();
@@ -706,15 +960,147 @@ function renderMyHistory(){
   <div class="card">
     ${reqs.length===0?emptyState('📋','No requests yet'):
     `<div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Supervisor ✓</th><th>HR ✓</th><th>Status</th><th>Submitted</th></tr></thead>
-      <tbody>${reqs.map(r=>`<tr>
+      <thead><tr><th>ID</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Supervisor ✓</th><th>HR ✓</th><th>Status</th><th>Submitted / Last Edited</th><th></th></tr></thead>
+      <tbody>${reqs.map(r=>{const edits=r.edits||[];return`<tr>
         <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
         <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
         <td>${r.travel?`<span class="badge badge-travel">✈ ${r.travelDest.split(',')[0]}</span>`:'—'}</td>
-        <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td><td>${badge(r.status)}</td>
-        <td style="color:var(--muted);font-size:11px;white-space:nowrap">${fmtSubmitted(r.submitted)}</td>
-      </tr>`).join('')}</tbody></table></div>`}
+        <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td>
+        <td>
+          ${badge(r.status)}${edits.length>0?` <span class="badge badge-edited">✏ ${edits.length}</span>`:''}
+          ${r.status==='cancelled'&&r.cancellationReason?`<div style="font-size:11px;color:var(--muted);margin-top:3px"><b>Reason:</b> ${r.cancellationReason}</div><div style="font-size:10px;color:var(--muted)">by ${r.cancelledBy} · ${fmtSubmitted(r.cancelledAt)}</div>`:''}
+        </td>
+        <td style="font-size:11px;white-space:nowrap">
+          <div style="color:var(--muted)">${fmtSubmitted(r.submitted)}</div>
+          ${edits.length>0?`<div style="color:var(--txtamber);margin-top:2px">✏ ${fmtSubmitted(edits[edits.length-1].timestamp)}</div>`:''}
+        </td>
+        <td>${r.status!=='rejected'&&r.status!=='cancelled'?`<button class="btn btn-sm btn-warning" onclick="viewEditRequest(${r.id})">✏ Edit</button>`:''}</td>
+      </tr>`}).join('')}</tbody></table></div>`}
   </div>`;
+}
+
+function viewEditRequest(id){
+  state.editRequestId=id;
+  state.editRequestPrev=state.nav;
+  state.nav='editrequest';
+  renderAll();
+}
+
+function calcEditDays(){
+  const f=document.getElementById('eFrom')?.value,t=document.getElementById('eTo')?.value;
+  if(f&&t){let d=0,cur=new Date(f),end=new Date(t);while(cur<=end){if(cur.getDay()!==0&&cur.getDay()!==6)d++;cur.setDate(cur.getDate()+1);}const el=document.getElementById('eDays');if(el)el.value=Math.max(1,d);}
+}
+
+function renderEditRequestForm(id){
+  const r=state.requests.find(x=>x.id===id);
+  if(!r)return emptyState('⚠','Request not found','');
+  if(r.employee!==state.user.name)return emptyState('🔒','Access denied','You can only edit your own requests.');
+  const availableSups=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr'||w.role==='secretariat')&&w.active&&w.name!==state.user.name);
+  const edits=r.edits||[];
+  return `
+  <div class="page-actions">
+    <button class="btn" onclick="setNav(state.editRequestPrev||'history')">← Back</button>
+  </div>
+  <div class="page-title">Edit Leave Request — LR-${String(r.id).padStart(3,'0')}</div>
+  <div class="page-sub">Saving changes will reset all approvals and require re-approval by Supervisor and HR.</div>
+  <div class="card" style="max-width:720px">
+    <div class="note" style="background:var(--amber);border-left-color:var(--txtamber);color:var(--txtamber);margin-bottom:16px">⚠ Any saved change will set Supervisor and HR approval back to <b>Pending</b>.</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Leave Type</label><select id="eType">${LEAVE_TYPES.map(t=>`<option${t===r.type?' selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Department</label><select id="eDept">${DEPARTMENTS.map(d=>`<option${d===r.dept?' selected':''}>${d}</option>`).join('')}</select></div>
+      <div class="form-group"><label>From Date</label><input type="date" id="eFrom" value="${r.from}" onchange="calcEditDays()"></div>
+      <div class="form-group"><label>To Date</label><input type="date" id="eTo" value="${r.to}" onchange="calcEditDays()"></div>
+      <div class="form-group"><label>Working Days</label><input type="number" id="eDays" value="${r.days}" min="1" style="background:#F9FAFB"></div>
+      <div class="form-group"><label>Reporting Supervisor</label><select id="eSup">${availableSups.map(s=>`<option${s.name===r.supBy?' selected':''}>${s.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Reason / Notes</label><textarea id="eReason">${r.reason||''}</textarea></div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="eTravelToggle" ${r.travel?'checked':''} onchange="document.getElementById('eTravelSection').style.display=this.checked?'block':'none'">
+      <label for="eTravelToggle">✈ This leave involves travel authorization</label>
+    </div>
+    <div id="eTravelSection" style="display:${r.travel?'block':'none'}">
+      <div class="travel-section">
+        <div class="travel-title">✈ Travel Authorization Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Destination (City, Country)</label><input type="text" id="eDest" value="${r.travelDest||''}" placeholder="e.g. Bridgetown, Barbados"></div>
+          <div class="form-group"><label>Estimated Cost (USD)</label><input type="number" id="eCost" value="${r.travelCost||''}" placeholder="e.g. 850" min="0"></div>
+          <div class="form-group full"><label>Purpose of Travel</label><input type="text" id="ePurpose" value="${r.travelPurpose||''}" placeholder="e.g. Regional HR Conference 2026"></div>
+          <div class="form-group full"><label>Additional Notes</label><textarea id="eTravelNotes">${r.travelNotes||''}</textarea></div>
+          <div class="form-group full" style="display:flex;align-items:center;gap:8px;padding:6px 0">
+            <input type="checkbox" id="eTravelInsurance" ${r.travelInsurance?'checked':''} onchange="document.getElementById('eInsuranceProviderWrap').style.display=this.checked?'block':'none'" style="margin:0;cursor:pointer">
+            <label for="eTravelInsurance" style="margin:0;font-weight:500;cursor:pointer">🛡 Employee has Travel Insurance</label>
+          </div>
+          <div class="form-group full" id="eInsuranceProviderWrap" style="display:${r.travelInsurance?'block':'none'}">
+            <label>Insurance Provider / Policy No.</label>
+            <input type="text" id="eInsuranceProvider" value="${r.travelInsuranceProvider||''}" placeholder="e.g. Guardian Life — POL-2026-4892">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="setNav(state.editRequestPrev||'history')">Cancel</button>
+      <button class="btn btn-warning" onclick="saveEditRequest(${id})">💾 Save & Reset Approvals</button>
+    </div>
+  </div>
+  ${edits.length>0?`
+  <div class="card" style="max-width:720px">
+    <div class="card-title">Edit History (${edits.length})</div>
+    <div class="edit-timeline">
+      ${edits.map((e,i)=>`
+      <div class="edit-entry">
+        <div class="edit-dot"></div>
+        <div style="flex:1">
+          <div class="edit-meta">Edit #${i+1} · ${fmtSubmitted(e.timestamp)}</div>
+          <div class="edit-changes">${Object.entries(e.changes).map(([k,v])=>`<span class="edit-change-pill"><b>${k}:</b> ${v.from} → ${v.to}</span>`).join('')}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`:''}`;
+}
+
+function saveEditRequest(id){
+  const r=state.requests.find(x=>x.id===id);
+  if(!r||r.employee!==state.user.name)return;
+  const type=document.getElementById('eType')?.value||r.type;
+  const dept=document.getElementById('eDept')?.value||r.dept;
+  const from=document.getElementById('eFrom')?.value||r.from;
+  const to=document.getElementById('eTo')?.value||r.to;
+  const days=parseInt(document.getElementById('eDays')?.value)||r.days;
+  const sup=document.getElementById('eSup')?.value||r.supBy;
+  const reason=document.getElementById('eReason')?.value||'';
+  const travel=document.getElementById('eTravelToggle')?.checked||false;
+  const travelDest=document.getElementById('eDest')?.value||'';
+  const travelPurpose=document.getElementById('ePurpose')?.value||'';
+  const travelCost=document.getElementById('eCost')?.value||'';
+  const travelInsurance=document.getElementById('eTravelInsurance')?.checked||false;
+  const travelInsuranceProvider=document.getElementById('eInsuranceProvider')?.value.trim()||'';
+  if(travel&&!travelDest){toast('Please enter a travel destination.','error');return;}
+  const changes={};
+  if(type!==r.type)changes['Leave Type']={from:r.type,to:type};
+  if(dept!==r.dept)changes['Department']={from:r.dept,to:dept};
+  if(from!==r.from)changes['From Date']={from:r.from,to:from};
+  if(to!==r.to)changes['To Date']={from:r.to,to:to};
+  if(days!==r.days)changes['Days']={from:String(r.days),to:String(days)};
+  if(sup!==r.supBy)changes['Supervisor']={from:r.supBy,to:sup};
+  if(reason!==(r.reason||''))changes['Reason']={from:r.reason||'(none)',to:reason||'(none)'};
+  if(travel!==r.travel)changes['Travel']={from:r.travel?'Yes':'No',to:travel?'Yes':'No'};
+  if(travel&&travelDest!==r.travelDest)changes['Destination']={from:r.travelDest||'—',to:travelDest};
+  if(Object.keys(changes).length===0){toast('No changes detected.','info');return;}
+  if(!r.edits)r.edits=[];
+  r.edits.push({timestamp:new Date().toISOString().slice(0,16),editedBy:state.user.name,changes});
+  r.type=type;r.dept=dept;r.from=from;r.to=to;r.days=days;
+  r.supBy=sup;r.reason=reason;r.travel=travel;
+  r.travelDest=travelDest;r.travelPurpose=travelPurpose;r.travelCost=travelCost;
+  r.travelInsurance=travelInsurance;r.travelInsuranceProvider=travelInsuranceProvider;
+  r.supDecision='Pending';r.supDate='';
+  r.hrDecision='Pending';r.hrDate='';
+  r.status='pending';
+  if(travel){r.travelSupApproval='Pending';r.travelHRApproval='Pending';}
+  addNotif(`Your ${type} request (${from}) was edited and is awaiting re-approval.`,'info',false);
+  addNotif(`${state.user.name} edited their ${type} request (${from} → ${to}). Re-approval required.`,'pending',false);
+  renderNotifBadge();renderNotifList();
+  toast('Request updated — approvals reset. ✓','success');
+  setNav('history');
 }
 
 function renderMyTravel(){
@@ -746,27 +1132,87 @@ function renderMyTravel(){
   <div class="note note-purple">✈ Travel authorization is reviewed separately. Both the leave AND travel must be fully approved.</div>`;
 }
 
+function getJMHolidays(year){
+  function easter(y){
+    const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4;
+    const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3);
+    const h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4;
+    const l=(32+2*e+2*i-h-k)%7,mn=Math.floor((a+11*h+22*l)/451);
+    const mo=Math.floor((h+l-7*mn+114)/31),da=((h+l-7*mn+114)%31)+1;
+    return new Date(y,mo-1,da);
+  }
+  function shift(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+  function nthMon(y,mo0,n){const d=new Date(y,mo0,1);return shift(d,(1-d.getDay()+7)%7+(n-1)*7);}
+  function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  const e=easter(year);
+  return {
+    [fmt(new Date(year,0,1))]:{name:"New Year's Day",short:'New Year'},
+    [fmt(shift(e,-46))]:{name:'Ash Wednesday',short:'Ash Wed'},
+    [fmt(shift(e,-2))]:{name:'Good Friday',short:'Good Fri'},
+    [fmt(shift(e,1))]:{name:'Easter Monday',short:'Easter Mon'},
+    [fmt(new Date(year,4,23))]:{name:'National Labour Day',short:'Labour Day'},
+    [fmt(new Date(year,7,1))]:{name:'Emancipation Day',short:'Emancip.'},
+    [fmt(new Date(year,7,6))]:{name:'Independence Day',short:'Indep. Day'},
+    [fmt(nthMon(year,9,3))]:{name:'National Heroes Day',short:'Heroes Day'},
+    [fmt(new Date(year,11,25))]:{name:'Christmas Day',short:'Christmas'},
+    [fmt(new Date(year,11,26))]:{name:'Boxing Day',short:'Boxing Day'},
+  };
+}
+function prevCalMonth(){
+  const now=new Date();
+  let m=state.calMonth!=null?state.calMonth:now.getMonth();
+  let y=state.calYear!=null?state.calYear:now.getFullYear();
+  if(--m<0){m=11;y--;}
+  state.calMonth=m;state.calYear=y;renderAll();
+}
+function nextCalMonth(){
+  const now=new Date();
+  let m=state.calMonth!=null?state.calMonth:now.getMonth();
+  let y=state.calYear!=null?state.calYear:now.getFullYear();
+  if(++m>11){m=0;y++;}
+  state.calMonth=m;state.calYear=y;renderAll();
+}
 function renderCalendar(){
-  const y=2026,m=4;
+  const now=new Date();
+  const TODAY=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const y=state.calYear!=null?state.calYear:now.getFullYear();
+  const m=state.calMonth!=null?state.calMonth:now.getMonth();
   const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const first=new Date(y,m,1).getDay(),total=new Date(y,m+1,0).getDate();
   const myReqs=state.requests.filter(r=>r.employee===state.user.name&&r.status==='approved');
-  function getType(d){const ds=`2026-05-${String(d).padStart(2,'0')}`;for(const r of myReqs){if(ds>=r.from&&ds<=r.to)return r.type;}return null;}
+  const holidays=getJMHolidays(y);
+  function ds(d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+  function getType(d){const s=ds(d);for(const r of myReqs){if(s>=r.from&&s<=r.to)return r.type;}return null;}
   let cells='';
-  for(let i=0;i<first;i++)cells+=`<div class="cal-day cal-empty"></div>`;
-  for(let d=1;d<=total;d++){const lt=getType(d);const cls=lt==='Sick Leave'?'cal-sick':lt==='Vacation'?'cal-leave':lt?'cal-other':'cal-day';cells+=`<div class="${cls}" title="${lt||''}">${d}</div>`;}
+  for(let i=0;i<first;i++)cells+='<div class="cal-day cal-empty"></div>';
+  for(let d=1;d<=total;d++){
+    const s=ds(d),lt=getType(d),hol=holidays[s],isToday=s===TODAY;
+    let cls,title,lbl='';
+    if(lt==='Sick Leave'){cls='cal-sick';title='Sick Leave';lbl='Sick';}
+    else if(lt==='Vacation'){cls='cal-leave';title='Vacation';lbl='Vacation';}
+    else if(lt){cls='cal-other';title=lt;lbl='Other';}
+    else if(hol){cls='cal-holiday';title=hol.name;lbl=hol.short;}
+    else{cls='cal-day';title='';}
+    cells+='<div class="'+cls+(isToday?' cal-today':'')+'" title="'+title+'">'+d+(lbl?'<div class="cal-lbl">'+lbl+'</div>':'')+'</div>';
+  }
   return `
   <div class="page-title">Leave Calendar</div>
-  <div class="page-sub">Approved leave days for May 2026.</div>
+  <div class="page-sub">Your approved leave and Jamaican public holidays.</div>
   <div class="page-actions"><button class="btn btn-print" onclick="printPage()">🖨 Print Calendar</button></div>
-  <div class="card" style="max-width:500px">
-    <div class="card-title" style="font-size:15px">${monthNames[m]} ${y}</div>
+  <div class="card" style="max-width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <button class="btn btn-sm" onclick="prevCalMonth()" style="font-size:16px;line-height:1;padding:4px 12px">&#8249;</button>
+      <div style="font-size:15px;font-weight:700">${monthNames[m]} ${y}</div>
+      <button class="btn btn-sm" onclick="nextCalMonth()" style="font-size:16px;line-height:1;padding:4px 12px">&#8250;</button>
+    </div>
     <div class="cal-grid">${dayNames.map(d=>`<div class="cal-head">${d}</div>`).join('')}${cells}</div>
     <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;font-size:12px">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--ltpurple);border:1px solid #C4B5FD;border-radius:3px;display:inline-block"></span>Public Holiday</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--ltgreen);border-radius:3px;display:inline-block"></span>Vacation</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--red);border-radius:3px;display:inline-block"></span>Sick Leave</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--amber);border-radius:3px;display:inline-block"></span>Other</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border:2px solid var(--dkgreen);border-radius:3px;display:inline-block"></span>Today</span>
     </div>
   </div>`;
 }
@@ -787,7 +1233,7 @@ function renderPending(role){
   pending.map(r=>`
   <div class="approve-card">
     <div class="approve-card-header">
-      <div><div class="emp-name">${r.employee}</div><div class="emp-meta">${r.dept} · Submitted ${fmtSubmitted(r.submitted)}</div></div>
+      <div><div class="emp-name"><span class="link-name" onclick="viewProfile('${r.employee.replace(/'/g,"\\'")}'">${r.employee}</span></div><div class="emp-meta">${r.dept} · Submitted ${fmtSubmitted(r.submitted)}</div></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${typeBadge(r.type)}${r.travel?`<span class="badge badge-travel">✈ Travel</span>`:''}</div>
     </div>
     <div class="approve-details">
@@ -795,12 +1241,14 @@ function renderPending(role){
       <div class="detail-block"><label>To</label><span>${r.to}</span></div>
       <div class="detail-block"><label>Working Days</label><span><b>${r.days}</b> days</span></div>
     </div>
+    ${(r.edits||[]).length>0?`<div style="background:var(--amber);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--txtamber);font-weight:600;margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">✏ Edited ${r.edits.length} time${r.edits.length!==1?'s':''}${r.edits.map((e,i)=>`<span style="font-weight:400">· Edit #${i+1}: ${fmtSubmitted(e.timestamp)} — ${Object.keys(e.changes).join(', ')}</span>`).join('')}</div>`:''}
     ${r.reason?`<div class="approve-reason">📝 ${r.reason}</div>`:''}
     ${r.travel?`<div class="travel-badge-row">✈ Travel to ${r.travelDest} — ${r.travelPurpose}${r.travelCost?` · Est. $${parseInt(r.travelCost).toLocaleString()}`:''}</div>`:''}
     ${role==='hr'?`<div style="font-size:12px;color:${r.supDecision==='Approved'?'var(--txtgreen)':r.supDecision==='Rejected'?'#E24B4A':'var(--muted)'};font-weight:600;margin-bottom:10px">${r.supDecision==='Approved'?`✓ Supervisor (${r.supBy}) approved on ${r.supDate}`:r.supDecision==='Rejected'?'Supervisor rejected this request':'Awaiting supervisor review'}</div>`:''}
     <div class="approve-actions">
       <button class="btn btn-sm btn-reject" ${role==='hr'&&r.supDecision!=='Approved'?'disabled title="Supervisor approval required first"':''} onclick="decide(${r.id},'${role}','reject')">✕ Reject</button>
       <button class="btn btn-sm btn-approve" ${role==='hr'&&r.supDecision!=='Approved'?'disabled title="Supervisor approval required first"':''} onclick="decide(${r.id},'${role}','approve')">✓ Approve</button>
+      ${role==='hr'?`<button class="btn btn-sm btn-danger" onclick="viewCancelRequest(${r.id})" title="Cancel this leave request with a reason">✕ Cancel Leave</button>`:''}
     </div>
   </div>`).join('')}`;
 }
@@ -818,13 +1266,14 @@ function renderTravelPending(role){
   travelPending.map(r=>`
   <div class="approve-card" style="border:1.5px solid #C4B5FD">
     <div class="approve-card-header">
-      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta">${r.employee} · ${r.dept} · LR-${String(r.id).padStart(3,'0')} (${r.type}) · Submitted ${fmtSubmitted(r.submitted)}</div></div>
+      <div><div class="emp-name">✈ ${r.travelDest}</div><div class="emp-meta"><span class="link-name" onclick="viewProfile('${r.employee.replace(/'/g,"\\'")}'">${r.employee}</span> · ${r.dept} · LR-${String(r.id).padStart(3,'0')} (${r.type}) · Submitted ${fmtSubmitted(r.submitted)}</div></div>
       ${r.travelCost?`<div style="font-size:18px;font-weight:700;color:var(--dpurple)">$${parseInt(r.travelCost).toLocaleString()}</div>`:''}
     </div>
     <div class="approve-details">
       <div class="detail-block"><label>Leave Dates</label><span>${r.from} → ${r.to}</span></div>
       <div class="detail-block"><label>Days</label><span>${r.days}</span></div>
       <div class="detail-block"><label>Leave Status</label><span>${badge(r.supDecision)}</span></div>
+      <div class="detail-block"><label>Travel Insurance</label><span style="font-weight:600;color:${r.travelInsurance?'var(--txtgreen)':'#E24B4A'}">${r.travelInsurance?('🛡 Yes'+(r.travelInsuranceProvider?' — '+r.travelInsuranceProvider:'')):'✕ None declared'}</span></div>
     </div>
     <div class="approve-reason">✈ <b>Purpose:</b> ${r.travelPurpose||'Not specified'}</div>
     ${role==='hr'?`<div style="font-size:12px;color:var(--txtgreen);font-weight:600;margin-bottom:10px">✓ Supervisor approved travel</div>`:''}
@@ -866,8 +1315,10 @@ function decideTravel(id,role,action){
 }
 
 function renderTeam(){
+  const isSupervisor=state.user.role==='supervisor';
+  const supervisedWorkers=state.workers.filter(w=>w.active&&(isSupervisor?w.supervisor===state.user.name:true));
   const empMap={};
-  const visibleReqs=state.user.role==='supervisor'?state.requests.filter(r=>r.supBy===state.user.name):state.requests;
+  const visibleReqs=isSupervisor?state.requests.filter(r=>r.supBy===state.user.name||r.employee===state.user.name):state.requests;
   visibleReqs.forEach(r=>{
     if(!empMap[r.employee])empMap[r.employee]={name:r.employee,dept:r.dept,byType:{},pending:0,travel:0};
     if(r.status==='approved'){empMap[r.employee].byType[r.type]=(empMap[r.employee].byType[r.type]||0)+r.days;}
@@ -876,16 +1327,51 @@ function renderTeam(){
   });
   const rows=Object.values(empMap);
   return `
-  <div class="page-title">Team Leave Overview</div>
-  <div class="page-sub">Approved leave usage across all employees.</div>
+  <div class="page-title">${isSupervisor?'My Team':'All Employees'}</div>
+  <div class="page-sub">${isSupervisor?`${supervisedWorkers.length} direct report${supervisedWorkers.length!==1?'s':''} · click any name to view their leave profile`:'Overview of all staff leave usage · click any name to view their leave profile'}</div>
   <div class="page-actions">
     <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
     <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
   </div>
-  <div class="card"><div class="table-wrap"><table>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><span class="card-title" style="margin:0">Staff Summary</span></div>
+    ${supervisedWorkers.length===0?`<div style="padding:20px">${emptyState('👥','No direct reports found','')}</div>`:
+    supervisedWorkers.map(w=>{
+      const b=state.balances[w.name]||{};
+      const ent=w.entitlements||{};
+      const wReqs=state.requests.filter(r=>r.employee===w.name);
+      const wPending=wReqs.filter(r=>r.status==='pending').length;
+      const wApproved=wReqs.filter(r=>r.status==='approved').length;
+      const wTravel=wReqs.filter(r=>r.travel).length;
+      const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const vacRem=(ent.vacation||b.vacation||0)-(b.vacUsed||0);
+      const sickRem=(ent.sick||b.sick||0)-(b.sickUsed||0);
+      return `
+      <div class="team-summary-card">
+        <div class="worker-avatar">${initials}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="link-name" onclick="viewProfile('${w.name.replace(/'/g,"\\'")}'">${w.name}</span>
+            ${wPending>0?`<span class="badge badge-pending">${wPending} pending</span>`:''}
+          </div>
+          <div class="worker-meta">${w.jobTitle||'—'} · ${w.dept}</div>
+          <div class="team-mini-stats">
+            <div class="mini-stat">Vacation <b style="color:${vacRem<=0?'var(--txtred)':vacRem<=3?'var(--txtamber)':'var(--dkgreen)'}">${vacRem} left</b></div>
+            <div class="mini-stat">Sick <b>${sickRem} left</b></div>
+            ${wApproved>0?`<div class="mini-stat"><b>${wApproved}</b> approved</div>`:''}
+            ${wTravel>0?`<div class="mini-stat">✈ <b>${wTravel}</b> travel</div>`:''}
+          </div>
+        </div>
+        <button class="btn btn-sm" onclick="viewProfile('${w.name.replace(/'/g,"\\'")}')">View Profile →</button>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">Leave Usage Table</div>
+    <div class="table-wrap"><table>
     <thead><tr><th>Employee</th><th>Dept</th><th>Vacation</th><th>Sick</th><th>In Lieu</th><th>Maternity</th><th>Paternal</th><th>Bereavement</th><th>Other</th><th>Travel</th><th>Pending</th></tr></thead>
-    <tbody>${rows.map(e=>`<tr>
-      <td style="font-weight:600">${e.name}</td><td style="color:var(--muted)">${e.dept}</td>
+    <tbody>${rows.length===0?`<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:24px">No data yet</td></tr>`:rows.map(e=>`<tr>
+      <td><span class="link-name" onclick="viewProfile('${e.name.replace(/'/g,"\\'")}'">${e.name}</span></td><td style="color:var(--muted)">${e.dept}</td>
       ${['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Other'].map(t=>`<td style="text-align:center">${e.byType[t]?`<b>${e.byType[t]}d</b>`:'—'}</td>`).join('')}
       <td style="text-align:center">${e.travel>0?`<span class="badge badge-travel">${e.travel}</span>`:'—'}</td>
       <td style="text-align:center">${e.pending>0?`<span class="badge badge-pending">${e.pending}</span>`:'—'}</td>
@@ -893,31 +1379,188 @@ function renderTeam(){
   </table></div></div>`;
 }
 
+function viewCancelRequest(id){
+  state.cancelRequestId=id;
+  state.cancelRequestPrev=state.nav;
+  state.nav='cancelrequest';
+  renderAll();
+}
+
+function renderCancelRequestForm(id){
+  const r=state.requests.find(x=>x.id===id);
+  if(!r)return emptyState('⚠','Request not found','');
+  if(!isHRLevel(state.user.role))return emptyState('🔒','Access denied','Only HR Admin and Secretariat can cancel leave requests.');
+  return `
+  <div class="page-actions">
+    <button class="btn" onclick="setNav(state.cancelRequestPrev||'all')">← Back</button>
+  </div>
+  <div class="page-title">Cancel Leave Request</div>
+  <div class="page-sub">LR-${String(r.id).padStart(3,'0')} · ${r.employee} · ${r.type} · ${r.from} → ${r.to} (${r.days} days)</div>
+  <div class="card" style="max-width:640px;border:2px solid #F09595">
+    <div class="note" style="background:var(--red);border-left-color:var(--txtred);color:var(--txtred);margin-bottom:18px">⚠ Cancelling this request is permanent. The employee will be notified with the reason provided.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;font-size:13px">
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:3px">EMPLOYEE</span>${r.employee}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:3px">LEAVE TYPE</span>${typeBadge(r.type)}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:3px">DATES</span>${r.from} → ${r.to} (${r.days} days)</div>
+      <div><span style="color:var(--muted);font-size:11px;font-weight:600;display:block;margin-bottom:3px">CURRENT STATUS</span>${badge(r.status)}</div>
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label>Reason for Cancellation <span style="color:var(--txtred)">*</span></label>
+      <textarea id="cancelReason" placeholder="e.g. Employee confirmed they are no longer taking this leave. / Operational requirements required their presence..." style="min-height:90px"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="setNav(state.cancelRequestPrev||'all')">Go Back</button>
+      <button class="btn btn-danger" onclick="confirmCancelRequest(${id})">✕ Confirm Cancellation</button>
+    </div>
+  </div>`;
+}
+
+function confirmCancelRequest(id){
+  const r=state.requests.find(x=>x.id===id);
+  if(!r||!isHRLevel(state.user.role))return;
+  const reason=document.getElementById('cancelReason')?.value.trim();
+  if(!reason){toast('A cancellation reason is required.','error');return;}
+  r.status='cancelled';
+  r.cancelledBy=state.user.name;
+  r.cancelledAt=new Date().toISOString().slice(0,16);
+  r.cancellationReason=reason;
+  addNotif(`Your ${r.type} request (${r.from} → ${r.to}) has been cancelled by HR. Reason: ${reason}`,'error',false);
+  addNotif(`${r.employee}'s ${r.type} request (${r.from} → ${r.to}) was cancelled by ${state.user.name}.`,'error',false);
+  renderNotifBadge();renderNotifList();
+  toast(`Leave request cancelled. ✓`,'success');
+  setNav(state.cancelRequestPrev||'all');
+}
+
 function renderAllRequests(){
-  const visibleReqs=state.user.role==='hr'?state.requests:state.requests.filter(r=>r.supBy===state.user.name);
+  const visibleReqs=isHRLevel(state.user.role)?state.requests:state.requests.filter(r=>r.supBy===state.user.name||r.employee===state.user.name);
   return `
   <div class="page-title">All Leave Requests</div>
   <div class="page-sub">Complete record of all employee requests.</div>
   <div class="page-actions">
     <button class="btn btn-print" onclick="printPage()">🖨 Print All</button>
     <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    ${isHRLevel(state.user.role)?`<button class="btn btn-primary" onclick="exportToExcel()" style="background:#1D6F42;border-color:#1D6F42">📊 Export Full Excel</button>`:''}
   </div>
   <div class="card"><div class="table-wrap"><table>
-    <thead><tr><th>ID</th><th>Employee</th><th>Dept</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Sup ✓</th><th>HR ✓</th><th>Status</th><th>Submitted</th></tr></thead>
+    <thead><tr><th>ID</th><th>Employee</th><th>Dept</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Sup ✓</th><th>HR ✓</th><th>Status</th><th>Submitted</th>${isHRLevel(state.user.role)?'<th></th>':''}</tr></thead>
     <tbody>${visibleReqs.map(r=>`<tr>
       <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
       <td style="font-weight:600">${r.employee}</td><td style="color:var(--muted)">${r.dept}</td>
       <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
       <td>${r.travel?`<span class="badge badge-travel">✈</span>`:'—'}</td>
-      <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td><td>${badge(r.status)}</td>
+      <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td>
+      <td>${badge(r.status)}${r.status==='cancelled'&&r.cancellationReason?`<div style="font-size:10px;color:var(--muted);margin-top:3px;max-width:180px;white-space:normal">✕ ${r.cancellationReason}</div>`:''}</td>
       <td style="color:var(--muted);font-size:11px;white-space:nowrap">${fmtSubmitted(r.submitted)}</td>
+      ${isHRLevel(state.user.role)?`<td>${r.status!=='cancelled'&&r.status!=='rejected'?`<button class="btn btn-sm btn-danger" onclick="viewCancelRequest(${r.id})">✕ Cancel</button>`:''}</td>`:''}
     </tr>`).join('')}</tbody></table></div></div>`;
 }
 
+function viewProfile(name){
+  state.profileFor=name;
+  state.profilePrev=state.nav;
+  state.nav='profile';
+  renderAll();
+}
+
+function renderLeaveProfile(name){
+  if(!name)return emptyState('👤','No profile selected','');
+  const worker=state.workers.find(w=>w.name===name);
+  const b=state.balances[name]||{};
+  const ent=worker?.entitlements||{};
+  const reqs=state.requests.filter(r=>r.employee===name);
+  const initials=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const pending=reqs.filter(r=>r.status==='pending').length;
+  const approved=reqs.filter(r=>r.status==='approved').length;
+  const travelCount=reqs.filter(r=>r.travel).length;
+  const roleLabel=worker?.role==='hr'?'HR Admin':worker?.role==='secretariat'?'Secretariat':worker?.role==='supervisor'?'Supervisor':'Employee';
+  const leaveItems=[
+    {label:'Vacation',    used:b.vacUsed||0,       total:ent.vacation||b.vacation||0,      color:'#1D9E75'},
+    {label:'Sick Leave',  used:b.sickUsed||0,      total:ent.sick||b.sick||0,              color:'#185FA5'},
+    {label:'In Lieu Of',  used:b.inLieuUsed||0,    total:ent.inLieu||b.inLieu||0,          color:'#BA7517'},
+    {label:'Departmental',used:b.deptUsed||0,      total:ent.departmental||b.dept||0,      color:'#5B21B6'},
+    {label:'Maternity',   used:b.maternityUsed||0, total:ent.maternity||0,                 color:'#EC4899'},
+    {label:'Paternal',    used:b.paternalUsed||0,  total:ent.paternal||0,                  color:'#10B981'},
+    {label:'Bereavement', used:0,                  total:ent.bereavement||0,               color:'#6B7280'},
+    {label:'Other',       used:0,                  total:ent.other||0,                     color:'#94A3B8'},
+  ].filter(l=>l.total>0);
+  return `
+  <div class="page-actions">
+    <button class="btn" onclick="setNav(state.profilePrev||'team')">← Back</button>
+    <button class="btn btn-print" onclick="printPage()">🖨 Print</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="page-title">${name}</div>
+  <div class="page-sub">${worker?.jobTitle||'—'} · ${worker?.dept||'—'}</div>
+  <div class="card">
+    <div class="profile-header">
+      <div class="profile-avatar-lg">${initials}</div>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;margin-bottom:2px">${name}</div>
+        <div class="profile-meta-row">
+          ${worker?.email?`<span>✉ ${worker.email}</span>`:''}
+          ${worker?.startDate?`<span>📅 Since ${worker.startDate}</span>`:''}
+          ${worker?.supervisor?`<span>👤 Reports to ${worker.supervisor}</span>`:''}
+          ${worker?.gender?`<span>⚥ ${worker.gender}</span>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge ${worker?.active!==false?'status-active':'status-inactive'}">${worker?.active!==false?'Active':'Inactive'}</span>
+          <span class="badge badge-type">${roleLabel}</span>
+          ${pending>0?`<span class="badge badge-pending">${pending} Pending</span>`:''}
+          ${approved>0?`<span class="badge badge-approved">${approved} Approved</span>`:''}
+          ${travelCount>0?`<span class="badge badge-travel">✈ ${travelCount} Travel</span>`:''}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Leave Balances</div>
+    ${leaveItems.length===0?`<div style="font-size:13px;color:var(--muted)">No entitlements configured.</div>`:`
+    <div class="profile-balance-grid">
+      ${leaveItems.map(l=>{const rem=l.total-l.used;return `
+      <div class="profile-balance-item">
+        <div class="profile-balance-label">${l.label}</div>
+        <div class="profile-balance-nums">
+          <span style="font-size:22px;font-weight:700;color:${rem<=0?'var(--txtred)':rem<=3?'var(--txtamber)':'var(--dkgreen)'}">${rem}</span>
+          <span style="font-size:11px;color:var(--muted)">/ ${l.total} days</span>
+        </div>
+        ${barHtml(l.used,l.total,l.color)}
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${l.used} used</div>
+      </div>`;}).join('')}
+    </div>`}
+  </div>
+  <div class="card">
+    <div class="card-title">Leave Request History (${reqs.length})</div>
+    ${reqs.length===0?emptyState('📋','No requests submitted yet',''):
+    `<div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Travel</th><th>Sup ✓</th><th>HR ✓</th><th>Status</th><th>Submitted / Last Edited</th>${isHRLevel(state.user.role)?'<th></th>':''}</tr></thead>
+      <tbody>${reqs.map(r=>{const edits=r.edits||[];return`<tr>
+        <td style="color:var(--muted);font-size:11px;font-weight:600">LR-${String(r.id).padStart(3,'0')}</td>
+        <td>${typeBadge(r.type)}</td><td>${r.from}</td><td>${r.to}</td><td><b>${r.days}</b></td>
+        <td>${r.travel?`<span class="badge badge-travel">✈ ${r.travelDest.split(',')[0]}</span>`:'—'}</td>
+        <td>${badge(r.supDecision||'Pending')}</td><td>${badge(r.hrDecision||'Pending')}</td>
+        <td>${badge(r.status)}${edits.length>0?` <span class="badge badge-edited">✏ ${edits.length}</span>`:''}${r.status==='cancelled'&&r.cancellationReason?`<div style="font-size:10px;color:var(--muted);margin-top:3px;white-space:normal;max-width:160px">✕ ${r.cancellationReason}</div>`:''}</td>
+        <td style="font-size:11px;white-space:nowrap"><div style="color:var(--muted)">${fmtSubmitted(r.submitted)}</div>${edits.length>0?`<div style="color:var(--txtamber);margin-top:2px">✏ ${fmtSubmitted(edits[edits.length-1].timestamp)}</div>`:''}</td>
+        ${isHRLevel(state.user.role)?`<td>${r.status!=='cancelled'&&r.status!=='rejected'?`<button class="btn btn-sm btn-danger" onclick="viewCancelRequest(${r.id})">✕ Cancel</button>`:''}</td>`:''}
+      </tr>`}).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+
+function setReportYear(y){state.reportYear=y;renderAll();}
+
 function renderReports(){
+  // Derive available years from request data, newest first
+  const allYears=[...new Set(state.requests.map(r=>r.from?.slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+  const currentYear=new Date().getFullYear().toString();
+  const defaultYear=allYears.includes(currentYear)?currentYear:(allYears[0]||currentYear);
+  const activeYear=state.reportYear||defaultYear;
+
+  // Filter requests to the active year (or all if 'all' selected)
+  const yearReqs=activeYear==='all'?state.requests:state.requests.filter(r=>r.from?.startsWith(activeYear));
+
   const typeData={};LEAVE_TYPES.forEach(t=>typeData[t]={days:0,count:0});
   const deptData={};let totalDays=0,travelCount=0,pendingCount=0,travelCostTotal=0;
-  state.requests.forEach(r=>{
+  yearReqs.forEach(r=>{
     if(r.status==='pending')pendingCount++;
     if(r.travel){travelCount++;travelCostTotal+=parseInt(r.travelCost||0);}
     if(r.status==='approved'){
@@ -927,43 +1570,59 @@ function renderReports(){
     }
   });
   const typeColors={'Vacation':'#1D9E75','Sick Leave':'#E24B4A','In Lieu Of':'#BA7517','Maternity':'#EC4899','Paternal':'#10B981','Bereavement':'#6B7280','Departmental':'#5B21B6','Other':'#94A3B8'};
+  const cancelledCount=yearReqs.filter(r=>r.status==='cancelled').length;
+  const rejectedCount=yearReqs.filter(r=>r.status==='rejected').length;
   return `
   <div class="page-title">Leave & Travel Reports</div>
-  <div class="page-sub">Aggregated statistics for 2026.</div>
+  <div class="page-sub">Aggregated statistics${activeYear==='all'?' across all years':' for '+activeYear} · ${yearReqs.length} total request${yearReqs.length!==1?'s':''}.</div>
   <div class="page-actions">
     <button class="btn btn-print" onclick="printPage()">🖨 Print Report</button>
     <button class="btn btn-export" onclick="exportCSV()">⬇ Export Leaves CSV</button>
     <button class="btn btn-export" onclick="exportTravelCSV()">✈ Export Travel CSV</button>
+    <button class="btn btn-primary" onclick="exportToExcel()" style="background:#1D6F42;border-color:#1D6F42">📊 Export Full Excel</button>
   </div>
+  <div class="report-tabs">
+    <button class="report-tab${activeYear==='all'?' active':''}" onclick="setReportYear('all')">All Years</button>
+    ${allYears.map(y=>`<button class="report-tab${activeYear===y?' active':''}" onclick="setReportYear('${y}')">${y}</button>`).join('')}
+  </div>
+  ${yearReqs.length===0?`<div class="card">${emptyState('📊','No data for '+activeYear,'No requests were submitted in this period.')}</div>`:`
   <div class="stats-row">
-    <div class="stat"><div class="stat-label">Total Days Approved</div><div class="stat-value">${totalDays}</div></div>
-    <div class="stat"><div class="stat-label">Vacation Days</div><div class="stat-value green-val">${typeData['Vacation'].days}</div></div>
-    <div class="stat"><div class="stat-label">Mat. / Paternal</div><div class="stat-value" style="color:#EC4899">${(typeData['Maternity'].days||0)+(typeData['Paternal'].days||0)}</div></div>
-    <div class="stat"><div class="stat-label">Travel Est. Cost</div><div class="stat-value purple-val">$${travelCostTotal.toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">Days Approved</div><div class="stat-value">${totalDays}</div><div class="stat-sub">${yearReqs.filter(r=>r.status==='approved').length} requests</div></div>
+    <div class="stat"><div class="stat-label">Vacation Days</div><div class="stat-value green-val">${typeData['Vacation'].days}</div><div class="stat-sub">${typeData['Vacation'].count} requests</div></div>
+    <div class="stat"><div class="stat-label">Pending / Travel</div><div class="stat-value amber-val">${pendingCount}</div><div class="stat-sub">✈ ${travelCount} travel</div></div>
+    <div class="stat"><div class="stat-label">Travel Est. Cost</div><div class="stat-value purple-val">$${travelCostTotal.toLocaleString()}</div><div class="stat-sub">${cancelledCount} cancelled · ${rejectedCount} rejected</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div class="card">
-      <div class="card-title">Days by Leave Type</div>
+      <div class="card-title">Days Approved by Leave Type</div>
       ${LEAVE_TYPES.map(t=>`<div class="prog-row">
-        <div class="prog-label"><span>${t}</span><span style="font-weight:700">${typeData[t]?.days||0}d</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,((typeData[t]?.days||0)/totalDays*100)).toFixed(0):0}%;background:${typeColors[t]||'#888'}"></div></div>
+        <div class="prog-label"><span>${t}</span><span style="font-weight:700">${typeData[t]?.days||0}d <span style="font-weight:400;color:var(--muted);font-size:11px">(${typeData[t]?.count||0})</span></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,((typeData[t]?.days||0)/totalDays*100)).toFixed(1):0}%;background:${typeColors[t]||'#888'}"></div></div>
       </div>`).join('')}
     </div>
     <div class="card">
-      <div class="card-title">Days by Department</div>
-      ${Object.entries(deptData).map(([d,v])=>`<div class="prog-row">
+      <div class="card-title">Days Approved by Department</div>
+      ${Object.keys(deptData).length===0?`<div style="font-size:13px;color:var(--muted)">No approved leave for this period.</div>`:
+      Object.entries(deptData).sort((a,b)=>b[1]-a[1]).map(([d,v])=>`<div class="prog-row">
         <div class="prog-label"><span>${d}</span><span style="font-weight:700">${v}d</span></div>
-        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,(v/totalDays*100)).toFixed(0):0}%;background:var(--green)"></div></div>
+        <div class="prog-track"><div class="prog-fill" style="width:${totalDays>0?Math.min(100,(v/totalDays*100)).toFixed(1):0}%;background:var(--green)"></div></div>
       </div>`).join('')}
     </div>
-  </div>`;
+  </div>
+  <div class="card">
+    <div class="card-title">Mat. / Paternal / Bereavement</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px">
+      ${['Maternity','Paternal','Bereavement','In Lieu Of','Sick Leave','Departmental','Other'].map(t=>`
+      <div class="stat"><div class="stat-label">${t}</div><div class="stat-value" style="font-size:20px;color:${typeColors[t]||'var(--text)'}">${typeData[t]?.days||0}</div><div class="stat-sub">${typeData[t]?.count||0} req${typeData[t]?.count!==1?'s':''}</div></div>`).join('')}
+    </div>
+  </div>`}`;
 }
 
 // ── WORKER MANAGEMENT ────────────────────────────────────────────────────
 function renderWorkers(){
   const active=state.workers.filter(w=>w.active);
   const inactive=state.workers.filter(w=>!w.active);
-  const supervisors=state.workers.filter(w=>w.role==='supervisor'||w.role==='hr');
+  const supervisors=state.workers.filter(w=>w.role==='supervisor'||w.role==='hr'||w.role==='secretariat');
   return `
   <div class="page-title">Workers Directory</div>
   <div class="page-sub">${active.length} active · ${inactive.length} inactive · ${state.workers.length} total</div>
@@ -978,7 +1637,7 @@ function renderWorkers(){
 
 function workerCard(w,supervisors){
   const initials=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const roleLabel=w.role==='hr'?'HR Admin':w.role==='supervisor'?'Supervisor':'Employee';
+  const roleLabel=w.role==='hr'?'HR Admin':w.role==='secretariat'?'Secretariat':w.role==='supervisor'?'Supervisor':'Employee';
   const e=w.entitlements||{};
   return `
   <div class="worker-card" style="${!w.active?'opacity:.6':''}">
@@ -989,7 +1648,7 @@ function workerCard(w,supervisors){
         <span class="badge ${w.active?'status-active':'status-inactive'}">${w.active?'Active':'Inactive'}</span>
         <span class="badge badge-type">${roleLabel}</span>
       </div>
-      <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
+      <div class="worker-meta">${w.jobTitle} · ${w.dept}${w.gender?' · '+w.gender:''}${w.supervisor?' · Reports to: '+w.supervisor:''}</div>
       <div class="worker-meta" style="margin-top:2px">Start Date: ${w.startDate} · End Date: ${w.endDate || 'Present'}</div>
       <div class="worker-meta" style="margin-top:2px">@${w.username} · ${w.email}</div>
       <div class="worker-entitlements">
@@ -1007,7 +1666,7 @@ function workerCard(w,supervisors){
 
 function renderOnboard(prefill){
   const p=prefill||{};
-  const supervisors=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr')&&w.active);
+  const supervisors=state.workers.filter(w=>(w.role==='supervisor'||w.role==='hr'||w.role==='secretariat')&&w.active);
   const isEdit=!!p.username;
   return `
   <div class="page-title">${isEdit?'Edit Worker — '+p.name:'Onboard New Worker'}</div>
@@ -1027,6 +1686,13 @@ function renderOnboard(prefill){
             ${DEPARTMENTS.map(d=>`<option${(p.dept||'')=== d?' selected':''}>${d}</option>`).join('')}
           </select>
         </div>
+        <div class="form-group"><label>Gender</label>
+          <select id="ob-gender">
+            <option value="">— Select —</option>
+            <option value="Male"${p.gender==='Male'?' selected':''}>Male</option>
+            <option value="Female"${p.gender==='Female'?' selected':''}>Female</option>
+          </select>
+        </div>
         <div class="form-group"><label>Start Date</label><input type="date" id="ob-start" value="${p.startDate||TODAY}"></div>
         <div class="form-group"><label>End Date</label><input type="date" id="ob-end" value="${p.endDate||''}"></div>
         <div class="form-group" style="grid-column: span 2;"><label><input type="checkbox" id="ob-present" ${p.endDate?'':'checked'}> Currently employed / present</label></div>
@@ -1043,6 +1709,7 @@ function renderOnboard(prefill){
             <option value="employee"${(p.role||'employee')==='employee'?' selected':''}>Employee</option>
             <option value="supervisor"${p.role==='supervisor'?' selected':''}>Supervisor</option>
             <option value="hr"${p.role==='hr'?' selected':''}>HR Admin</option>
+            <option value="secretariat"${p.role==='secretariat'?' selected':''}>Secretariat</option>
           </select>
         </div>
         <div class="form-group"><label>Reporting Supervisor</label>
@@ -1105,6 +1772,7 @@ function onboardWorker(){
   const start=document.getElementById('ob-start')?.value;
   const endDate=document.getElementById('ob-end')?.value;
   const present=document.getElementById('ob-present')?.checked;
+  const gender=document.getElementById('ob-gender')?.value||'';
   const role=document.getElementById('ob-role')?.value;
   const sup=document.getElementById('ob-sup')?.value;
   const username=document.getElementById('ob-user')?.value.trim();
@@ -1138,7 +1806,7 @@ function onboardWorker(){
   USERS[username]={password,name,role,dept,initials};
 
   // Add to workers directory
-  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,startDate:start,endDate:employeeEndDate,active:employeeEndDate?false:true,entitlements});
+  state.workers.push({username,name,dept,role,supervisor:sup,email,jobTitle:title,gender,startDate:start,endDate:employeeEndDate,active:employeeEndDate?false:true,entitlements});
 
   // Seed empty balance
   state.balances[name]={
@@ -1233,6 +1901,7 @@ function saveWorkerEdit(username){
   w.startDate=document.getElementById('ob-start')?.value||w.startDate;
   w.endDate = present ? '' : (endDate||'');
   w.active = present || !w.endDate;
+  w.gender=document.getElementById('ob-gender')?.value||w.gender||'';
   w.role=document.getElementById('ob-role')?.value||w.role;
   w.supervisor=document.getElementById('ob-sup')?.value||'';
   w.entitlements={

@@ -249,6 +249,65 @@ tr:hover td{background:#FAFAFA}
 .edit-change-pill{background:var(--amber);color:var(--txtamber);border-radius:6px;padding:3px 10px;font-size:11px;white-space:nowrap}
 .badge-edited{background:var(--amber);color:var(--txtamber)}
 
+/* ── PROFILE PANEL ── */
+.profile-wrap{position:relative}
+.user-chip{cursor:pointer;transition:background .15s}
+.user-chip:hover{background:rgba(255,255,255,.25)}
+.profile-panel{position:absolute;top:46px;right:0;width:300px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:600;display:none;overflow:hidden;max-height:calc(100vh - 70px);overflow-y:auto}
+.profile-panel.open{display:block}
+.prof-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:4px 0;font-size:12px}
+.prof-lbl{color:var(--muted);flex-shrink:0;min-width:80px}
+.prof-val{font-weight:600;text-align:right;word-break:break-all;color:var(--text)}
+.theme-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s}
+.theme-btn:hover{background:var(--bg)}
+.theme-btn.active{border-color:var(--green);background:var(--ltgreen);color:var(--txtgreen);font-weight:600}
+
+/* ── THEMES ── */
+[data-theme="light"]{
+  --green:#22C55E;--dkgreen:#16A34A;--ltgreen:#DCFCE7;--txtgreen:#15803D;
+  --sidebar:#1E293B;--sidebar-active:#334155;
+  --bg:#F1F5F9;--card:#FFFFFF;--border:#E2E8F0;
+}
+[data-theme="blue"]{
+  --green:#3B82F6;--dkgreen:#2563EB;--ltgreen:#EFF6FF;--txtgreen:#1D4ED8;
+  --sidebar:#1E3A8A;--sidebar-active:#2563EB;
+  --ltpurple:#EFF6FF;--dpurple:#2563EB;
+}
+[data-theme="dark"]{
+  --green:#10B981;--dkgreen:#059669;--ltgreen:#064E3B;--txtgreen:#6EE7B7;
+  --bg:#0F172A;--card:#1E293B;--border:#334155;--text:#F1F5F9;--muted:#94A3B8;
+  --sidebar:#0B1120;--sidebar-active:#1E293B;
+  --amber:#431407;--txtamber:#FCD34D;
+  --red:#3B0A0A;--txtred:#FCA5A5;
+  --blue:#1E3A5F;--txtblue:#93C5FD;
+  --ltpurple:#312E81;--dpurple:#A78BFA;--purple:#1E1B4B;
+}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .btn{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .btn:hover{background:#334155}
+[data-theme="dark"] .btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
+[data-theme="dark"] .btn-primary:hover{background:var(--dkgreen);border-color:var(--dkgreen)}
+[data-theme="dark"] .btn-approve{background:var(--ltgreen);color:var(--txtgreen);border-color:var(--dkgreen)}
+[data-theme="dark"] .btn-reject{background:var(--red);color:var(--txtred);border-color:#7F1D1D}
+[data-theme="dark"] .btn-danger{background:var(--red);color:var(--txtred);border-color:#7F1D1D}
+[data-theme="dark"] .notif-panel{background:var(--card);border-color:var(--border)}
+[data-theme="dark"] .notif-item.unread{background:#0F2D1F}
+[data-theme="dark"] .notif-item:hover,[data-theme="dark"] .notif-item.unread:hover{background:#1E3A2F}
+[data-theme="dark"] .approve-card,[data-theme="dark"] .worker-card{background:var(--card);border-color:var(--border)}
+[data-theme="dark"] tr:hover td{background:#334155}
+[data-theme="dark"] .app-footer{background:rgba(15,23,42,.95);border-color:var(--border)}
+[data-theme="dark"] .success-banner{background:var(--ltgreen);border-color:var(--dkgreen)}
+[data-theme="dark"] .onboard-section{background:var(--bg);border-color:var(--border)}
+[data-theme="dark"] .credential-box{background:#020617}
+
+/* ── 2FA SCREEN ── */
+#twofa-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0F6E56 0%,#1A2233 100%);display:none;align-items:center;justify-content:center;z-index:9000}
+.twofa-code-input{text-align:center;font-size:28px;letter-spacing:.35em;font-family:monospace;font-weight:700}
+.twofa-bar-track{height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;margin-top:6px}
+.twofa-bar-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s linear}
+.setup-secret-box{background:var(--bg);border-radius:8px;padding:10px 12px;font-family:monospace;font-size:14px;letter-spacing:.14em;text-align:center;color:var(--text);font-weight:700;border:1.5px dashed var(--border);margin-bottom:10px;word-break:break-all}
+.setup-live-code{background:var(--ltgreen);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+
 /* ── PRINT STYLES ── */
 @media print{
   #login-screen,#toast,.notif-wrap,.logout-btn,.topbar,.sidebar,.page-actions,.approve-actions,.form-actions,.btn-print,.btn-export,.btn-approve,.btn-reject,.btn-purple,.btn-sm,.checkbox-row,.travel-section{display:none!important}
@@ -298,6 +357,34 @@ tr:hover td{background:#FAFAFA}
 </div>
 
 <!-- ══ APP SHELL ══════════════════════════════════════════════════════ -->
+<!-- ══ 2FA SCREEN ═════════════════════════════════════════════════════ -->
+<div id="twofa-screen">
+  <div class="login-box" style="max-width:380px">
+    <div class="login-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      LeaveTrack
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">🔐</div>
+      <div style="font-size:16px;font-weight:700">Two-Factor Authentication</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Welcome back, <b id="twofa-name"></b>.<br>Enter the 6-digit code from your authenticator app.</div>
+    </div>
+    <div class="login-field">
+      <label>Authentication Code</label>
+      <input class="twofa-code-input" type="text" id="twofa-code" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')verify2FA()">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:11px;color:var(--muted)">
+      <span>Refreshes in <span id="twofa-secs" style="font-weight:700">30s</span></span>
+      <div class="twofa-bar-track" style="width:130px"><div class="twofa-bar-fill" id="twofa-bar" style="width:100%"></div></div>
+    </div>
+    <button class="login-btn" onclick="verify2FA()">Verify →</button>
+    <div class="login-error" id="twofa-error" style="display:none"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="cancel2FA()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit">← Back to sign in</button>
+    </div>
+  </div>
+</div>
+
 <div class="app" id="app">
   <!-- TOP BAR -->
   <div class="topbar">
@@ -322,10 +409,14 @@ tr:hover td{background:#FAFAFA}
           </div>
         </div>
       </div>
-      <div class="user-chip">
-        <div class="user-avatar" id="user-avatar">S</div>
-        <span id="user-name">Sarah Johnson</span>
-        &nbsp;<span style="opacity:.6;font-size:10px" id="user-role-label">Employee</span>
+      <div class="profile-wrap" id="profile-wrap">
+        <div class="user-chip" onclick="toggleProfilePanel()" title="My Account">
+          <div class="user-avatar" id="user-avatar">S</div>
+          <span id="user-name">Sarah Johnson</span>
+          &nbsp;<span style="opacity:.6;font-size:10px" id="user-role-label">Employee</span>
+          <span style="opacity:.45;font-size:9px;margin-left:1px">▾</span>
+        </div>
+        <div class="profile-panel" id="profile-panel"></div>
       </div>
       <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
@@ -340,14 +431,14 @@ tr:hover td{background:#FAFAFA}
       </div>
     </div>
   </div>
-  <div class="app-footer">Built by Iaeshia Mitchell 2026</div>
+  <div class="app-footer">&copy; 2026 inspiredjadey</div>
 </div>
 
 <div id="toast"></div>
 
 <script>
 const TODAY = new Date().toISOString().split('T')[0];
-const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Other'];
+const LEAVE_TYPES = ['Vacation','Sick Leave','In Lieu Of','Maternity','Paternal','Bereavement','Departmental','Bereavement/Compassion','Study leave','No Pay Leave','Other'];
 
 const DEPARTMENTS = [
   'President',
@@ -413,7 +504,75 @@ const state = {
   }
 };
 
+// ── TOTP ENGINE (RFC 6238 / SHA-1) ───────────────────────────────────────
+function _sha1(bytes){
+  function rol(n,s){return(n<<s)|(n>>>(32-s));}
+  let H=[0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476,0xC3D2E1F0];
+  const ml=bytes.length,msg=Array.from(bytes);
+  msg.push(0x80);
+  while(msg.length%64!==56)msg.push(0);
+  const bl=ml*8;
+  msg.push(0,0,0,0,(bl>>>24)&0xff,(bl>>>16)&0xff,(bl>>>8)&0xff,bl&0xff);
+  for(let bi=0;bi<msg.length;bi+=64){
+    const W=new Array(80);
+    for(let j=0;j<16;j++)W[j]=(msg[bi+j*4]<<24)|(msg[bi+j*4+1]<<16)|(msg[bi+j*4+2]<<8)|msg[bi+j*4+3];
+    for(let j=16;j<80;j++)W[j]=rol(W[j-3]^W[j-8]^W[j-14]^W[j-16],1);
+    let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4];
+    for(let j=0;j<80;j++){
+      let f,k;
+      if(j<20){f=((b&c)|((~b)&d))>>>0;k=0x5A827999;}
+      else if(j<40){f=b^c^d;k=0x6ED9EBA1;}
+      else if(j<60){f=((b&c)|(b&d)|(c&d))>>>0;k=0x8F1BBCDC;}
+      else{f=b^c^d;k=0xCA62C1D6;}
+      const t=(rol(a,5)+f+e+k+W[j])>>>0;
+      e=d;d=c;c=rol(b,30)>>>0;b=a;a=t;
+    }
+    H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;
+  }
+  const out=new Uint8Array(20);
+  H.forEach((v,i)=>{out[i*4]=(v>>>24)&0xff;out[i*4+1]=(v>>>16)&0xff;out[i*4+2]=(v>>>8)&0xff;out[i*4+3]=v&0xff;});
+  return out;
+}
+function _hmacSha1(key,msg){
+  const bs=64;let k=key.length>bs?_sha1(key):key;
+  const kp=new Uint8Array(bs);kp.set(k);
+  const ip=kp.map(x=>x^0x36),op=kp.map(x=>x^0x5C);
+  const inner=new Uint8Array(bs+msg.length);inner.set(ip);inner.set(msg,bs);
+  const outer=new Uint8Array(bs+20);outer.set(op);outer.set(_sha1(inner),bs);
+  return _sha1(outer);
+}
+function _b32decode(s){
+  const alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  const clean=s.toUpperCase().replace(/[^A-Z2-7]/g,'');
+  let bits=0,val=0;const out=[];
+  for(const c of clean){const idx=alpha.indexOf(c);if(idx<0)continue;val=(val<<5)|idx;bits+=5;if(bits>=8){out.push((val>>>(bits-8))&0xff);bits-=8;}}
+  return new Uint8Array(out);
+}
+function _totp(secret,window=0){
+  const key=_b32decode(secret),t=Math.floor(Date.now()/1000/30)+window;
+  const msg=new Uint8Array(8);let tmp=t;for(let i=7;i>=0;i--){msg[i]=tmp&0xff;tmp=Math.floor(tmp/256);}
+  const h=_hmacSha1(key,msg),off=h[19]&0xf;
+  return String(((h[off]&0x7f)<<24|(h[off+1]&0xff)<<16|(h[off+2]&0xff)<<8|(h[off+3]&0xff))%1000000).padStart(6,'0');
+}
+function _verifyTOTP(secret,code){return[-1,0,1].some(w=>_totp(secret,w)===code);}
+function _newSecret(){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let s='';for(let i=0;i<16;i++)s+=c[Math.floor(Math.random()*32)];return s;}
+
+let _pendingAuth=null,_pending2FASecret=null,_twofaTimer=null,_setup2FATimer=null;
+
 // ── LOGIN / LOGOUT ────────────────────────────────────────────────────────
+function _launchApp(usr,u){
+  state.user={...usr,username:u};
+  state.nav=MENUS[usr.role][0].id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('twofa-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name').textContent=usr.name;
+  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role==='secretariat'?'Secretariat':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
+  document.getElementById('user-avatar').textContent=usr.initials;
+  if(usr.theme)setTheme(usr.theme);
+  seedNotifications();
+  renderAll();
+}
 function doLogin(){
   const u=document.getElementById('login-user').value.trim().toLowerCase();
   const p=document.getElementById('login-pass').value;
@@ -423,24 +582,118 @@ function doLogin(){
   if(!usr||usr.password!==p){errEl.textContent='Incorrect username or password. Please try again.';errEl.style.display='block';return;}
   if(workerRecord&&workerRecord.active===false){errEl.textContent='This account has been deactivated. Please contact HR.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  state.user={...usr,username:u};
-  state.nav=MENUS[usr.role][0].id;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('user-name').textContent=usr.name;
-  document.getElementById('user-role-label').textContent=usr.role==='hr'?'HR Admin':usr.role==='secretariat'?'Secretariat':usr.role.charAt(0).toUpperCase()+usr.role.slice(1);
-  document.getElementById('user-avatar').textContent=usr.initials;
-  seedNotifications();
-  renderAll();
+  if(usr.twofa&&usr.twofa.enabled){
+    _pendingAuth={usr,u};
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('twofa-screen').style.display='flex';
+    document.getElementById('twofa-code').value='';
+    document.getElementById('twofa-error').style.display='none';
+    document.getElementById('twofa-name').textContent=usr.name;
+    _startTwofaCountdown();
+    return;
+  }
+  _launchApp(usr,u);
 }
 
 function doLogout(){
   state.user=null;
+  _pendingAuth=null;
+  _pending2FASecret=null;
+  _stopTwofaCountdown();
+  _stop2FASetupTimer();
   document.getElementById('login-screen').style.display='flex';
+  document.getElementById('twofa-screen').style.display='none';
   document.getElementById('app').style.display='none';
   document.getElementById('login-user').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('notif-panel').classList.remove('open');
+  document.getElementById('profile-panel').classList.remove('open');
+}
+
+// ── 2FA VERIFICATION ─────────────────────────────────────────────────────
+function verify2FA(){
+  const code=document.getElementById('twofa-code').value.replace(/\s/g,'');
+  const errEl=document.getElementById('twofa-error');
+  if(!_pendingAuth){cancel2FA();return;}
+  if(!/^\d{6}$/.test(code)){errEl.textContent='Please enter a 6-digit code.';errEl.style.display='block';return;}
+  if(!_verifyTOTP(_pendingAuth.usr.twofa.secret,code)){errEl.textContent='Incorrect code. Please try again or wait for the next code.';errEl.style.display='block';return;}
+  _stopTwofaCountdown();
+  const {usr,u}=_pendingAuth;_pendingAuth=null;
+  _launchApp(usr,u);
+}
+function cancel2FA(){
+  _pendingAuth=null;_stopTwofaCountdown();
+  document.getElementById('twofa-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('twofa-code').value='';
+  document.getElementById('twofa-error').style.display='none';
+}
+function _startTwofaCountdown(){
+  _stopTwofaCountdown();
+  function tick(){
+    const secs=30-Math.floor((Date.now()/1000)%30);
+    const bar=document.getElementById('twofa-bar');
+    const txt=document.getElementById('twofa-secs');
+    if(bar)bar.style.width=(secs/30*100)+'%';
+    if(txt)txt.textContent=secs+'s';
+  }
+  tick();_twofaTimer=setInterval(tick,500);
+}
+function _stopTwofaCountdown(){if(_twofaTimer){clearInterval(_twofaTimer);_twofaTimer=null;}}
+
+// ── 2FA MANAGEMENT ───────────────────────────────────────────────────────
+function enable2FA(){
+  _pending2FASecret=_newSecret();
+  _redrawProfilePanel();
+  _start2FASetupTimer();
+}
+function confirm2FA(){
+  const code=document.getElementById('setup-confirm')?.value.replace(/\s/g,'');
+  const errEl=document.getElementById('setup-err');
+  if(!errEl)return;
+  if(!/^\d{6}$/.test(code)){errEl.textContent='Please enter a 6-digit code.';errEl.style.display='block';return;}
+  if(!_verifyTOTP(_pending2FASecret,code)){errEl.textContent='Incorrect code. Please check your authenticator app and try again.';errEl.style.display='block';return;}
+  const u=state.user.username;
+  if(!USERS[u].twofa)USERS[u].twofa={};
+  USERS[u].twofa.enabled=true;USERS[u].twofa.secret=_pending2FASecret;
+  state.user.twofa={...USERS[u].twofa};
+  _pending2FASecret=null;_stop2FASetupTimer();
+  _redrawProfilePanel();
+  toast('Two-factor authentication enabled ✓','success');
+}
+function disable2FA(){
+  const u=state.user.username;
+  if(USERS[u].twofa)USERS[u].twofa.enabled=false;
+  if(state.user.twofa)state.user.twofa.enabled=false;
+  _pending2FASecret=null;_stop2FASetupTimer();
+  _redrawProfilePanel();
+  toast('Two-factor authentication disabled.','info');
+}
+function cancel2FASetup(){
+  _pending2FASecret=null;_stop2FASetupTimer();
+  _redrawProfilePanel();
+}
+function _start2FASetupTimer(){
+  _stop2FASetupTimer();
+  function tick(){
+    if(!_pending2FASecret)return;
+    const secs=30-Math.floor((Date.now()/1000)%30);
+    const code=_totp(_pending2FASecret);
+    const codeEl=document.getElementById('setup-code');
+    const secsEl=document.getElementById('setup-secs');
+    const barEl=document.getElementById('setup-bar');
+    if(codeEl)codeEl.textContent=code;
+    if(secsEl)secsEl.textContent=secs+'s';
+    if(barEl)barEl.style.width=(secs/30*100)+'%';
+  }
+  tick();_setup2FATimer=setInterval(tick,500);
+}
+function _stop2FASetupTimer(){if(_setup2FATimer){clearInterval(_setup2FATimer);_setup2FATimer=null;}}
+function _redrawProfilePanel(){
+  const panel=document.getElementById('profile-panel');
+  if(!panel||!panel.classList.contains('open'))return;
+  panel.innerHTML=renderProfilePanelContent();
+  if(_pending2FASecret)_start2FASetupTimer();
 }
 
 // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
@@ -503,6 +756,132 @@ function clearAllNotifs(){
 
 function toggleNotifPanel(){
   document.getElementById('notif-panel').classList.toggle('open');
+  document.getElementById('profile-panel').classList.remove('open');
+}
+
+function toggleProfilePanel(){
+  const panel=document.getElementById('profile-panel');
+  const isOpen=panel.classList.contains('open');
+  document.getElementById('notif-panel').classList.remove('open');
+  if(isOpen){
+    panel.classList.remove('open');
+    if(_pending2FASecret){_pending2FASecret=null;_stop2FASetupTimer();}
+  } else {
+    panel.innerHTML=renderProfilePanelContent();
+    panel.classList.add('open');
+    if(_pending2FASecret)_start2FASetupTimer();
+  }
+}
+
+function renderProfilePanelContent(){
+  const w=state.workers.find(x=>x.username===state.user.username)||{};
+  const roleLabel=state.user.role==='hr'?'HR Admin':state.user.role==='secretariat'?'Secretariat':state.user.role.charAt(0).toUpperCase()+state.user.role.slice(1);
+  const themes=[
+    {id:'default',label:'Default',color:'#1D9E75'},
+    {id:'light',label:'Light',color:'#22C55E'},
+    {id:'blue',label:'Blue',color:'#3B82F6'},
+    {id:'dark',label:'Dark',color:'#1E293B'},
+  ];
+  const activeTheme=state.theme||'default';
+  const rows=[
+    w.dept?['Department',w.dept]:null,
+    w.jobTitle?['Job Title',w.jobTitle]:null,
+    w.email?['Email',w.email]:null,
+    w.startDate?['Start Date',w.startDate]:null,
+    w.gender?['Gender',w.gender]:null,
+  ].filter(Boolean);
+  const twofaEnabled=USERS[state.user.username]?.twofa?.enabled;
+  let twofaBody='';
+  if(twofaEnabled){
+    twofaBody=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div>
+        <span class="badge badge-approved" style="font-size:11px">&#10003; Active</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Your account is protected with 2FA.</div>
+      </div>
+      <button class="btn btn-sm" onclick="disable2FA()" style="color:var(--txtred);flex-shrink:0">Disable</button>
+    </div>`;
+  } else if(_pending2FASecret){
+    const fmtSecret=_pending2FASecret.match(/.{1,4}/g).join(' ');
+    twofaBody=`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Open your authenticator app (Google Authenticator, Authy, etc.), add a new account manually, and enter the secret key below. Then enter the 6-digit code shown to confirm.</div>
+    <div class="setup-secret-box">${fmtSecret}</div>
+    <div class="setup-live-code">
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Current Code</div>
+        <div id="setup-code" style="font-size:24px;font-weight:700;font-family:monospace;color:var(--txtgreen);letter-spacing:.15em">------</div>
+      </div>
+      <div style="text-align:right">
+        <div id="setup-secs" style="font-size:12px;color:var(--muted);font-weight:600">30s</div>
+        <div style="width:50px;height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden"><div id="setup-bar" class="twofa-bar-fill" style="width:100%"></div></div>
+      </div>
+    </div>
+    <input id="setup-confirm" type="text" inputmode="numeric" maxlength="6" placeholder="Enter code to confirm" style="text-align:center;font-size:18px;letter-spacing:.2em;font-family:monospace;margin-bottom:6px" onkeydown="if(event.key==='Enter')confirm2FA()">
+    <div id="setup-err" style="font-size:11px;color:var(--txtred);display:none;margin-bottom:6px"></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm" onclick="cancel2FASetup()" style="flex:1;justify-content:center">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="confirm2FA()" style="flex:1;justify-content:center">Confirm &amp; Enable</button>
+    </div>`;
+  } else {
+    twofaBody=`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Add an extra layer of security to your account using an authenticator app.</div>
+    <button class="btn btn-primary btn-sm" onclick="enable2FA()" style="width:100%;justify-content:center">Enable 2FA</button>`;
+  }
+  return `
+  <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px;background:var(--card)">
+    <div class="profile-avatar-lg" style="width:44px;height:44px;font-size:17px;flex-shrink:0">${state.user.initials}</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">${state.user.name}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${roleLabel}</div>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);padding:12px 16px;background:var(--card)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Profile</div>
+    ${rows.length?rows.map(([lbl,val])=>`<div class="prof-row"><span class="prof-lbl">${lbl}</span><span class="prof-val">${val}</span></div>`).join(''):'<div style="font-size:12px;color:var(--muted)">No profile data available.</div>'}
+  </div>
+  <div style="border-top:1px solid var(--border);padding:12px 16px;background:var(--card)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Change Password</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <input type="password" id="pp-curr" placeholder="Current password" style="font-size:12px">
+      <input type="password" id="pp-new" placeholder="New password (min. 6 chars)" style="font-size:12px">
+      <input type="password" id="pp-conf" placeholder="Confirm new password" style="font-size:12px">
+      <div id="pp-err" style="font-size:11px;color:var(--txtred);display:none"></div>
+      <button class="btn btn-primary btn-sm" onclick="changePassword()" style="justify-content:center;margin-top:2px">Save Password</button>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);padding:12px 16px;background:var(--card)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Two-Factor Authentication</div>
+    ${twofaBody}
+  </div>
+  <div style="border-top:1px solid var(--border);padding:12px 16px 16px;background:var(--card)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Theme</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${themes.map(t=>`<button onclick="setTheme('${t.id}')" class="theme-btn${activeTheme===t.id?' active':''}"><span style="width:12px;height:12px;border-radius:50%;background:${t.color};display:inline-block;border:1.5px solid rgba(0,0,0,.15);flex-shrink:0"></span>${t.label}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function changePassword(){
+  const curr=document.getElementById('pp-curr')?.value;
+  const next=document.getElementById('pp-new')?.value;
+  const conf=document.getElementById('pp-conf')?.value;
+  const errEl=document.getElementById('pp-err');
+  const u=state.user.username;
+  if(!USERS[u]||USERS[u].password!==curr){errEl.textContent='Current password is incorrect.';errEl.style.display='block';return;}
+  if(!next||next.length<6){errEl.textContent='New password must be at least 6 characters.';errEl.style.display='block';return;}
+  if(next!==conf){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  USERS[u].password=next;
+  document.getElementById('pp-curr').value='';
+  document.getElementById('pp-new').value='';
+  document.getElementById('pp-conf').value='';
+  toast('Password updated successfully ✓','success');
+}
+
+function setTheme(id){
+  state.theme=id;
+  document.documentElement.setAttribute('data-theme',id==='default'?'':id);
+  _redrawProfilePanel();
 }
 
 function requestBrowserNotifs(){
@@ -519,11 +898,14 @@ function sendBrowserNotif(title,body){
   }
 }
 
-// close notif panel when clicking outside
+// close panels when clicking outside
 document.addEventListener('click',e=>{
-  const panel=document.getElementById('notif-panel');
+  const notifPanel=document.getElementById('notif-panel');
   const bell=document.getElementById('notif-bell');
-  if(panel&&!panel.contains(e.target)&&!bell.contains(e.target))panel.classList.remove('open');
+  if(notifPanel&&!notifPanel.contains(e.target)&&!bell.contains(e.target))notifPanel.classList.remove('open');
+  const profPanel=document.getElementById('profile-panel');
+  const profWrap=document.getElementById('profile-wrap');
+  if(profPanel&&profWrap&&!profWrap.contains(e.target))profPanel.classList.remove('open');
 });
 
 // ── MENUS ─────────────────────────────────────────────────────────────────
